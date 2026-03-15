@@ -26,7 +26,7 @@ const styles = {
 };
 
 // 🌟 GAS URL
-const FIXED_GAS_URL = "https://script.google.com/macros/s/AKfycbzOQBdEtD-N8iGILeyjMjJWUnmAQGNHvaIZMZlE7roGDv4QsoS0TQG_KgfBhY9xPhGDqA/exec";
+const FIXED_GAS_URL = "https://script.google.com/macros/s/AKfycbwQejve9JLBn5MOvzPN_bdIDIy5JGQqX-HIqA_UQAQFDSGaMeum5h-RNQ080sTvq9flSQ/exec";
 
 export default function App() {
   const [config, setConfig] = useState({ sheetId: "", stride: "62" });
