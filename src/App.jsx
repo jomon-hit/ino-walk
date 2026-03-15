@@ -1,18 +1,17 @@
 import { useState, useEffect } from "react";
 
-// --- デザイン設定（市松模様を焼き尽くし、余白を確保） ---
 const styles = {
   container: {
-    margin: 0, padding: "50px 20px", minHeight: "100vh",
+    margin: 0, padding: "60px 20px", minHeight: "100vh",
     background: "linear-gradient(180deg, #001219 0%, #005f73 100%)",
     color: "#e9d8a6", display: "flex", flexDirection: "column", alignItems: "center",
     fontFamily: "'Sawarabi Mincho', serif",
   },
-  // 🗾 日本地図（タイトルの上。余白をしっかり確保）
+  // 🗾 日本地図（タイトルの上）
   mapHeader: {
-    width: "100%", maxWidth: "260px", height: "auto",
+    width: "100%", maxWidth: "240px", height: "auto",
     marginBottom: "30px", opacity: 0.8,
-    filter: "drop-shadow(0 0 12px rgba(148, 210, 189, 0.5)) invert(1)",
+    filter: "drop-shadow(0 0 10px rgba(148, 210, 189, 0.4)) invert(1)",
   },
   card: {
     width: "100%", maxWidth: "360px", background: "rgba(0, 18, 25, 0.85)",
@@ -20,29 +19,26 @@ const styles = {
     border: "1px solid rgba(148, 210, 189, 0.2)", marginBottom: "20px",
     textAlign: "center", boxShadow: "0 10px 40px rgba(0,0,0,0.6)",
   },
-  // 🌟 市松模様抹殺：画像を背景にして、オレンジ色を「加算」で合成する
+  // 🌟【市松模様・完全抹殺】
+  // 画像を「明るさ0、コントラスト1000%」にして一度真っ黒にし、
+  // その後 sepia で無理やりオレンジ色に染め上げる力業
   inoAvatar: {
     width: "140px", height: "140px", margin: "0 auto",
-    borderRadius: "50%",
-    backgroundColor: "#ee9b00", // シルエットの色
     backgroundImage: "url(/image_a879fe.png)",
-    backgroundSize: "contain",
-    backgroundRepeat: "no-repeat",
-    backgroundPosition: "center",
-    // 魔法の一行：画像と背景色を合成して市松模様を消す
-    backgroundBlendMode: "lighten", 
-    filter: "drop-shadow(0 0 15px rgba(238, 155, 0, 0.7))",
+    backgroundSize: "contain", backgroundRepeat: "no-repeat", backgroundPosition: "center",
+    // 呪いを解くフィルター
+    filter: "brightness(0) saturate(100%) invert(67%) sepia(95%) saturate(3000%) hue-rotate(1deg) brightness(103%) contrast(106%) drop-shadow(0 0 10px #ee9b00)",
   },
-  title: { fontSize: "1.9rem", color: "#ee9b00", margin: "20px 0 30px", fontWeight: "bold", lineHeight: "1.4", letterSpacing: "0.1em" },
+  title: { fontSize: "1.9rem", color: "#ee9b00", margin: "20px 0 30px", fontWeight: "bold", lineHeight: "1.4" },
   stationName: { fontSize: "2.6rem", color: "#ee9b00", margin: "10px 0", fontWeight: "bold" },
-  label: { fontSize: "0.85rem", color: "#94d2bd", letterSpacing: "0.15em", marginBottom: "8px" },
+  label: { fontSize: "0.85rem", color: "#94d2bd", letterSpacing: "0.15em" },
   value: { fontSize: "1.6rem", color: "#ffffff", marginTop: "5px" },
-  input: { width: "100%", padding: "14px", borderRadius: "12px", border: "1px solid #94d2bd", background: "rgba(255,255,255,0.05)", color: "white", marginTop: "12px", boxSizing: "border-box", fontSize: "1rem" },
-  button: { marginTop: "30px", padding: "14px 50px", borderRadius: "30px", background: "#ae2012", color: "white", border: "none", fontWeight: "bold", cursor: "pointer", fontSize: "1.1rem", boxShadow: "0 5px 20px rgba(174, 32, 18, 0.5)" }
+  input: { width: "100%", padding: "14px", borderRadius: "12px", border: "1px solid #94d2bd", background: "rgba(255,255,255,0.05)", color: "white", marginTop: "12px", boxSizing: "border-box" },
+  button: { marginTop: "30px", padding: "14px 50px", borderRadius: "30px", background: "#ae2012", color: "white", border: "none", fontWeight: "bold", cursor: "pointer", fontSize: "1.1rem" }
 };
 
-// 🌟 GAS URLをここに貼り付け
-const FIXED_GAS_URL = "あなたのGASウェブアプリURLをここに！";
+// 🌟 GAS URLをここに！
+const FIXED_GAS_URL = "あなたのGAS URL";
 
 export default function App() {
   const [config, setConfig] = useState({ sheetId: "", stride: "62" });
@@ -50,28 +46,24 @@ export default function App() {
   const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
-    const saved = localStorage.getItem("ino_v5_final");
+    const saved = localStorage.getItem("ino_v6_final");
     if (saved) {
       const p = JSON.parse(saved);
-      setConfig(p);
-      setIsReady(true);
-      load(p);
+      setConfig(p); setIsReady(true); load(p);
     }
   }, []);
 
   const load = async (c) => {
     try {
       const res = await fetch(`${FIXED_GAS_URL}?id=${c.sheetId}`);
-      const json = await res.json();
-      setData(json);
+      const json = await res.json(); setData(json);
     } catch (e) { console.error(e); }
   };
 
   const save = () => {
-    if (!config.sheetId) return alert("スプレッドシートIDを入力してください");
-    localStorage.setItem("ino_v5_final", JSON.stringify(config));
-    setIsReady(true);
-    load(config);
+    if (!config.sheetId) return alert("スプレッドシートIDを入力してね");
+    localStorage.setItem("ino_v6_final", JSON.stringify(config));
+    setIsReady(true); load(config);
   };
 
   if (!isReady) {
