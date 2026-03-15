@@ -26,7 +26,7 @@ const styles = {
 };
 
 // 🌟 GAS URL
-const FIXED_GAS_URL = "ここにあなたのGAS URLを貼り付けてね";
+const FIXED_GAS_URL = https://script.google.com/macros/s/AKfycbzOQBdEtD-N8iGILeyjMjJWUnmAQGNHvaIZMZlE7roGDv4QsoS0TQG_KgfBhY9xPhGDqA/exec;
 
 export default function App() {
   const [config, setConfig] = useState({ sheetId: "", stride: "62" });
