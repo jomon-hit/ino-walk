@@ -603,27 +603,34 @@ function updateUrl() {
 // ============================================================
 // CALCULATIONS
 // ============================================================
+
+// 各県の実距離と正しい累積距離を事前計算
+function buildPrefDistMap() {
+  const map = {};
+  let cumulative = 0;
+  prefList.forEach(pref => {
+    const firstStation = masterData.find(d => d.pref === pref);
+    if (firstStation) {
+      const dist = firstStation.nextDist; // 県の総距離
+      map[pref] = { dist, startCum: cumulative, endCum: cumulative + dist };
+      cumulative += dist;
+    }
+  });
+  return map;
+}
+
 function calcProgress() {
   if (!state.pref || !masterData.length) return {};
   
-  // Find first station of current prefecture
-  const prefStations = masterData.filter(d => d.pref === state.pref);
-  if (!prefStations.length) return {};
+  const prefDistMap = buildPrefDistMap();
+  const curPrefInfo = prefDistMap[state.pref];
+  if (!curPrefInfo) return {};
   
-  const firstStation = prefStations[0];
-  const prefDist = firstStation.nextDist; // Total distance of this prefecture
-  const inPrefDist = prefDist - state.km; // Distance walked within this prefecture
+  // 県内での踏破距離 = 県の総距離 - 残りkm
+  const inPrefDist = curPrefInfo.dist - state.km;
   
-  // Previous prefectures' total distance
-  const prevStations = masterData.filter(d => {
-    const idx = prefList.indexOf(d.pref);
-    const curIdx = prefList.indexOf(state.pref);
-    return idx < curIdx;
-  });
-  const prevDist = prevStations.length ? 
-    Math.max(...prevStations.map(d => d.cumDist)) : 0;
-  
-  const totalDist = prevDist + inPrefDist;
+  // 全体の累計距離 = 前の県までの累積 + 県内の踏破距離
+  const totalDist = curPrefInfo.startCum + inPrefDist;
   const remainDist = ROUTE_TOTAL - totalDist;
   const progressPct = (totalDist / ROUTE_TOTAL) * 100;
   
@@ -650,12 +657,17 @@ function calcProgress() {
   const nextSteps = Math.round((state.km * 100000) / STRIDE_CM);
   const nextDays = avgDist > 0 ? Math.ceil(state.km / avgDist) : 0;
   
-  // Find current station (last station where cumDist <= totalDist)
-  // If just started (totalDist = 0), default to first station
-  let currentStation = masterData[0]; // デフォルトは品川
+  // Find current station
+  // 各宿場の「正しい累積距離」= 県の開始累積 + (県距離 - nextDist)
+  let currentStation = masterData[0];
   for (let i = masterData.length - 1; i >= 0; i--) {
-    if (masterData[i].cumDist <= totalDist) {
-      currentStation = masterData[i]; break;
+    const s = masterData[i];
+    const pi = prefDistMap[s.pref];
+    if (pi) {
+      const stationCumDist = pi.startCum + (pi.dist - s.nextDist);
+      if (stationCumDist <= totalDist) {
+        currentStation = s; break;
+      }
     }
   }
   
@@ -777,10 +789,18 @@ function initMap() {
   }).addTo(map);
 }
 
+// 宿場の正しい累積距離を計算
+function getStationRealCumDist(s) {
+  const prefDistMap = buildPrefDistMap();
+  const pi = prefDistMap[s.pref];
+  if (!pi) return 0;
+  return pi.startCum + (pi.dist - s.nextDist);
+}
+
 function isStationPassed(s) {
   const c = calcProgress();
-  // 通過済み、または現在地の宿場はOK
-  return s.cumDist <= (c.totalDist || 0) || (c.currentStation && s.id === c.currentStation.id);
+  const stationCum = getStationRealCumDist(s);
+  return stationCum <= (c.totalDist || 0) || (c.currentStation && s.id === c.currentStation.id);
 }
 
 // 伊能さんカスタムアイコン（現在地用）- Leaflet読み込み後に初期化
@@ -808,7 +828,8 @@ function updateMap() {
   masterData.forEach(s => {
     if (!s.lat || !s.lng) return;
     
-    const passed = s.cumDist <= totalDist;
+    const sCumDist = getStationRealCumDist(s);
+    const passed = sCumDist <= totalDist;
     const isCurrent = c.currentStation && s.id === c.currentStation.id;
     
     let marker;
@@ -820,7 +841,7 @@ function updateMap() {
         <div style="font-family:'Noto Sans JP',sans-serif;min-width:200px;">
           <strong style="font-size:15px;">📍 現在地：${s.station}</strong><br>
           <span style="font-size:11px;color:#666;">${s.place}</span><br>
-          <span style="font-size:11px;">累積: ${s.cumDist} km</span>
+          <span style="font-size:11px;">累積: ${sCumDist.toFixed(1)} km</span>
           ${s.survey ? `<br><span style="font-size:11px;color:#3a6ea5;">🗺️ ${s.survey} ${s.surveyYear}</span>` : ''}
         </div>
       `);
@@ -835,7 +856,7 @@ function updateMap() {
         <div style="font-family:'Noto Sans JP',sans-serif;min-width:200px;">
           <strong style="font-size:15px;">${s.station}</strong><br>
           <span style="font-size:11px;color:#666;">${s.place}</span><br>
-          <span style="font-size:11px;">累積: ${s.cumDist} km</span>
+          <span style="font-size:11px;">累積: ${sCumDist.toFixed(1)} km</span>
           ${s.survey ? `<br><span style="font-size:11px;color:#3a6ea5;">🗺️ ${s.survey} ${s.surveyYear}</span>` : ''}
           ${s.inopediaDiary ? `<br><a href="${s.inopediaDiary}" target="_blank" style="font-size:11px;">📖 InoPedia</a>` : ''}
         </div>
@@ -851,7 +872,7 @@ function updateMap() {
         <div style="font-family:'Noto Sans JP',sans-serif;text-align:center;padding:8px;">
           <span style="font-size:24px;">🔒</span><br>
           <strong style="font-size:13px;color:#999;">まだ到着していません</strong><br>
-          <span style="font-size:11px;color:#aaa;">あと ${(s.cumDist - totalDist).toFixed(1)} km</span>
+          <span style="font-size:11px;color:#aaa;">あと ${(sCumDist - totalDist).toFixed(1)} km</span>
         </div>
       `);
     }
@@ -875,7 +896,8 @@ function renderStationsList() {
   
   let html = '';
   masterData.forEach(s => {
-    const passed = s.cumDist <= totalDist;
+    const sCumDist = getStationRealCumDist(s);
+    const passed = sCumDist <= totalDist;
     const isCurrent = c.currentStation && s.id === c.currentStation.id;
     
     if (passed || isCurrent) {
@@ -883,14 +905,14 @@ function renderStationsList() {
       html += `<div class="station-card ${cls}" onclick='showStationDetail(masterData[${s.id-1}])'>
         <div class="station-name">${s.station}</div>
         <div class="station-place">${s.pref}　${s.place}</div>
-        <div class="station-dist">累積 ${s.cumDist} km</div>
+        <div class="station-dist">累積 ${sCumDist.toFixed(1)} km</div>
         ${s.survey ? `<div class="station-survey">🗺️ ${s.survey} ${s.surveyYear}</div>` : ''}
       </div>`;
     } else {
       html += `<div class="station-card" style="opacity:0.5;border-left-color:var(--future);">
         <div class="station-name" style="color:var(--future);">🔒 ？？？</div>
         <div class="station-place" style="color:var(--future);">${s.pref}　???</div>
-        <div class="station-dist" style="color:var(--future);">あと ${(s.cumDist - totalDist).toFixed(1)} km で解放</div>
+        <div class="station-dist" style="color:var(--future);">あと ${(sCumDist - totalDist).toFixed(1)} km で解放</div>
       </div>`;
     }
   });
@@ -907,7 +929,7 @@ function showStationDetail(s) {
   document.getElementById('modalContent').innerHTML = `
     <div class="modal-close" onclick="document.getElementById('stationModal').classList.remove('show')">✕</div>
     <div class="modal-station-name serif">${s.station}</div>
-    <div class="modal-place">${s.pref}　${s.place}　|　累積 ${s.cumDist} km</div>
+    <div class="modal-place">${s.pref}　${s.place}　|　累積 ${getStationRealCumDist(s).toFixed(1)} km</div>
     
     <div class="ai-comment">
       <div class="ai-label">✨ Gemini</div>
@@ -1135,25 +1157,3 @@ function resetAll() {
 // ============================================================
 async function init() {
   readUrlParams();
-  await loadData();
-  
-  if (!masterData.length) return;
-  
-  // Populate selects
-  populatePrefSelect('inputPref');
-  
-  document.getElementById('pageLoading').classList.remove('active');
-  
-  if (state.start) {
-    // Returning user
-    enterApp();
-  } else {
-    // New user
-    document.getElementById('pageWelcome').classList.add('active');
-  }
-}
-
-init();
-</script>
-</body>
-</html>
