@@ -336,6 +336,14 @@ body {
         <div class="stat-value" id="avgSteps">0</div>
         <div class="stat-label">1日平均(歩)</div>
       </div>
+      <div class="stat-box">
+        <div class="stat-value" id="strideCm">-</div>
+        <div class="stat-label">歩幅(cm)</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-value" id="remainDaysTotal">-</div>
+        <div class="stat-label">完歩まであと(日)</div>
+      </div>
     </div>
   </div>
 
@@ -411,7 +419,29 @@ body {
   </div>
   <div class="card">
     <div class="card-title"><span class="icon">📅</span> 開始日</div>
-    <input type="date" class="input-date" id="settStartDate">
+    <input type="date" class="input-date" id="settStartDate" onchange="saveStartDate()">
+  </div>
+  <div class="card">
+    <div class="card-title"><span class="icon">👣</span> 歩幅設定</div>
+    <div id="strideDisplay" style="font-size:14px;margin-bottom:12px;">
+      現在の歩幅：<strong id="strideValue">未設定</strong>
+    </div>
+    <p style="font-size:12px;color:var(--text-sub);margin-bottom:10px;">
+      歩幅がわかる方はそのまま入力。わからない方は万歩計のメモリー画面で今日の歩数と距離を確認してください。
+    </p>
+    <div style="background:var(--bg);border-radius:8px;padding:12px;margin-bottom:10px;">
+      <div class="input-label">今日の歩数</div>
+      <input type="number" class="input-number" id="calcSteps" placeholder="6622" style="margin-bottom:8px;">
+      <div class="input-label">今日の距離（km）</div>
+      <input type="number" class="input-number" id="calcDist" step="0.01" placeholder="4.1">
+      <button class="btn btn-outline" onclick="calcStride()" style="margin-top:8px;font-size:13px;padding:10px;">🔢 歩幅を計算</button>
+      <div id="calcResult" style="display:none;text-align:center;margin-top:8px;font-size:15px;font-weight:700;color:var(--accent2);"></div>
+    </div>
+    <div class="input-label">歩幅を直接入力（cm）</div>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <input type="number" class="input-number" id="directStride" step="0.1" placeholder="62.0" style="flex:1;">
+      <button class="btn btn-secondary" onclick="saveStride()" style="width:auto;padding:10px 16px;font-size:13px;">保存</button>
+    </div>
   </div>
   <div class="card">
     <div class="card-title"><span class="icon">📋</span> 到着記録</div>
@@ -468,7 +498,7 @@ const STRIDE_CM = 62; // 仮歩幅
 // ============================================================
 let masterData = [];
 let prefList = [];
-let state = { start: '', pref: '', km: 0, arrivals: {} };
+let state = { start: '', pref: '', km: 0, stride: 0, arrivals: {} };
 let map = null;
 let markers = [];
 
@@ -559,6 +589,7 @@ function readUrlParams() {
     state.start = p.get('s') || '';
     state.pref = p.get('p') || '';
     state.km = parseFloat(p.get('k')) || 0;
+    state.stride = parseFloat(p.get('stride')) || 0;
     state.arrivals = {};
     const arr = p.get('a');
     if (arr) {
@@ -577,6 +608,7 @@ function buildUrl() {
   if (state.start) p.set('s', state.start);
   if (state.pref) p.set('p', state.pref);
   if (state.km) p.set('k', state.km);
+  if (state.stride) p.set('stride', state.stride);
   const arr = Object.entries(state.arrivals)
     .map(([k,v]) => `${k}:${v}`).join(',');
   if (arr) p.set('a', arr);
@@ -643,7 +675,11 @@ function calcProgress() {
   }
   
   const avgDist = elapsedDays > 0 ? totalDist / elapsedDays : 0;
-  const avgSteps = avgDist > 0 ? Math.round((avgDist * 100000) / STRIDE_CM) : 0;
+  
+  // 歩幅：設定されていれば使う、なければデフォルト62cm
+  const stride = state.stride > 0 ? state.stride : STRIDE_CM;
+  const avgSteps = elapsedDays > 0 ? Math.round((avgDist * 100000) / stride) : 0;
+  
   const remainDays = avgDist > 0 ? Math.ceil(remainDist / avgDist) : 0;
   
   // Prediction date
@@ -653,8 +689,8 @@ function calcProgress() {
     predDate.setDate(predDate.getDate() + remainDays);
   }
   
-  // Steps for next prefecture border
-  const nextSteps = Math.round((state.km * 100000) / STRIDE_CM);
+  // Steps for next prefecture border（実歩幅で計算）
+  const nextSteps = Math.round((state.km * 100000) / stride);
   const nextDays = avgDist > 0 ? Math.ceil(state.km / avgDist) : 0;
   
   // Find current station
@@ -673,7 +709,7 @@ function calcProgress() {
   
   return {
     totalDist, remainDist, progressPct, elapsedDays,
-    avgDist, avgSteps, remainDays, predDate,
+    avgDist, avgSteps, remainDays, predDate, stride,
     nextSteps, nextDays, currentStation
   };
 }
@@ -718,6 +754,8 @@ function updateDashboard() {
   document.getElementById('elapsedDays').textContent = c.elapsedDays;
   document.getElementById('avgDist').textContent = c.avgDist.toFixed(1);
   document.getElementById('avgSteps').textContent = c.avgSteps.toLocaleString();
+  document.getElementById('strideCm').textContent = state.stride > 0 ? state.stride.toFixed(1) : '-';
+  document.getElementById('remainDaysTotal').textContent = c.remainDays > 0 ? c.remainDays.toLocaleString() : '-';
   
   // Next pref
   document.getElementById('npCurrent').textContent = state.pref;
@@ -1081,6 +1119,13 @@ function showSettings() {
       `${d.getFullYear()}-${(d.getMonth()+1).toString().padStart(2,'0')}-${d.getDate().toString().padStart(2,'0')}`;
   }
   
+  // Stride display
+  document.getElementById('strideValue').textContent = 
+    state.stride > 0 ? `${state.stride.toFixed(1)} cm` : '未設定（デフォルト62cm）';
+  if (state.stride > 0) {
+    document.getElementById('directStride').value = state.stride.toFixed(1);
+  }
+  
   // Arrival log
   const container = document.getElementById('settArrivalLog');
   const c = calcProgress();
@@ -1105,6 +1150,41 @@ function showSettings() {
   
   // Bookmark URL
   document.getElementById('bookmarkUrl').value = buildUrl();
+}
+
+function saveStartDate() {
+  const val = document.getElementById('settStartDate').value;
+  if (val) {
+    state.start = val.replace(/-/g, '');
+    updateUrl();
+    updateDashboard();
+  }
+}
+
+function calcStride() {
+  const steps = parseInt(document.getElementById('calcSteps').value) || 0;
+  const dist = parseFloat(document.getElementById('calcDist').value) || 0;
+  if (steps > 0 && dist > 0) {
+    const stride = (dist * 100000) / steps; // cm
+    document.getElementById('calcResult').style.display = 'block';
+    document.getElementById('calcResult').textContent = `あなたの歩幅：${stride.toFixed(1)} cm`;
+    document.getElementById('directStride').value = stride.toFixed(1);
+  } else {
+    alert('歩数と距離を両方入力してください');
+  }
+}
+
+function saveStride() {
+  const val = parseFloat(document.getElementById('directStride').value) || 0;
+  if (val > 20 && val < 200) {
+    state.stride = val;
+    updateUrl();
+    document.getElementById('strideValue').textContent = `${val.toFixed(1)} cm`;
+    updateDashboard();
+    alert(`歩幅を ${val.toFixed(1)} cm に設定しました`);
+  } else {
+    alert('歩幅は20〜200cmの範囲で入力してください');
+  }
 }
 
 function updateAndSaveBookmark() {
@@ -1157,3 +1237,25 @@ function resetAll() {
 // ============================================================
 async function init() {
   readUrlParams();
+  await loadData();
+  
+  if (!masterData.length) return;
+  
+  // Populate selects
+  populatePrefSelect('inputPref');
+  
+  document.getElementById('pageLoading').classList.remove('active');
+  
+  if (state.start) {
+    // Returning user
+    enterApp();
+  } else {
+    // New user
+    document.getElementById('pageWelcome').classList.add('active');
+  }
+}
+
+init();
+</script>
+</body>
+</html>
