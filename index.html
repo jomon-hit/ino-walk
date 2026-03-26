@@ -651,7 +651,8 @@ function calcProgress() {
   const nextDays = avgDist > 0 ? Math.ceil(state.km / avgDist) : 0;
   
   // Find current station (last station where cumDist <= totalDist)
-  let currentStation = null;
+  // If just started (totalDist = 0), default to first station
+  let currentStation = masterData[0]; // デフォルトは品川
   for (let i = masterData.length - 1; i >= 0; i--) {
     if (masterData[i].cumDist <= totalDist) {
       currentStation = masterData[i]; break;
@@ -778,7 +779,8 @@ function initMap() {
 
 function isStationPassed(s) {
   const c = calcProgress();
-  return s.cumDist <= (c.totalDist || 0);
+  // 通過済み、または現在地の宿場はOK
+  return s.cumDist <= (c.totalDist || 0) || (c.currentStation && s.id === c.currentStation.id);
 }
 
 // 伊能さんカスタムアイコン（現在地用）- Leaflet読み込み後に初期化
@@ -876,7 +878,7 @@ function renderStationsList() {
     const passed = s.cumDist <= totalDist;
     const isCurrent = c.currentStation && s.id === c.currentStation.id;
     
-    if (passed) {
+    if (passed || isCurrent) {
       const cls = isCurrent ? 'current' : 'passed';
       html += `<div class="station-card ${cls}" onclick='showStationDetail(masterData[${s.id-1}])'>
         <div class="station-name">${s.station}</div>
@@ -1155,4 +1157,3 @@ init();
 </script>
 </body>
 </html>
-
