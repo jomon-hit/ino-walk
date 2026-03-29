@@ -536,7 +536,7 @@ body {
 // CONFIG
 // ============================================================
 const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSQZ8WTbzooTSiBg_Svogan1Ne9OpuIDec35J-yM300ZygQdNFsh3AmOlA0b8BEf7Wq7MYYLfbMHpeD/pub?gid=1400730466&single=true&output=csv';
-const DIARY_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSc3JRnJCtEi3IU_VnzqcslKpWbjMxTQ2p8pjUW9IqwWfSCviEurLpX36n-eldmPmHwXYKvUNLs5bx1/pub?output=csv';
+const DIARY_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQXTifSyAmD2AjYXcZ8rX7Q3vP1hB1E4wNOxAtgDa3I3lXtvXPBtJ97PQPAFilVm4XfejV41dQTnFHv/pub?output=csv';
 const ROUTE_TOTAL = 19044.2; // km
 const MARATHON = 42.195;
 const TOKAIDO = 492; // km (東海道五十三次 片道)
@@ -983,18 +983,6 @@ function updateDashboard() {
     document.getElementById('currentStationContent').innerHTML = `
       <div style="font-size:18px;font-weight:900;margin-bottom:4px;">${s.station}</div>
       <div style="font-size:12px;color:var(--text-sub);margin-bottom:8px;">${s.place}</div>
-      <div class="ai-comment">
-        <div class="ai-label">✨ Gemini</div>
-        <div class="ai-text">${s.gemini}</div>
-      </div>
-      <div class="ai-comment">
-        <div class="ai-label">💬 ChatGPT</div>
-        <div class="ai-text">${s.chatgpt}</div>
-      </div>
-      <div class="ai-comment">
-        <div class="ai-label">🤖 Claude</div>
-        <div class="ai-text">${s.claude}</div>
-      </div>
       ${s.survey ? `<div class="inou-section">
         <div class="inou-label">🗺️ 伊能忠敬 ${s.survey}測量 ${s.surveyYear}</div>
       </div>` : ''}
