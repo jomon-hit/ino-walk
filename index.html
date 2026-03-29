@@ -359,6 +359,16 @@ body {
         <div class="intro-body">
           端末を変えたいときやバックアップが必要なときは、設定画面からURLを生成してください。
         </div>
+        <div style="display:flex;flex-direction:column;gap:8px;width:100%;max-width:320px;margin-top:8px;">
+          <a href="https://www.inopedia.tokyo/" target="_blank"
+             style="display:block;padding:10px 14px;background:#f0f4e8;border-radius:8px;text-decoration:none;font-size:12px;color:var(--accent2);font-weight:700;text-align:center;">
+            📖 InoPedia（伊能忠敬と伊能図の大事典）
+          </a>
+          <a href="https://www.yamasa-tokei.co.jp/seihin/pocket/gk-710.html" target="_blank"
+             style="display:block;padding:10px 14px;background:#e8f0ff;border-radius:8px;text-decoration:none;font-size:12px;color:var(--accent3);font-weight:700;text-align:center;">
+            ⌚ ヤマサ電波時計万歩計 GK-710
+          </a>
+        </div>
       </div>
 
     </div>
@@ -374,7 +384,8 @@ body {
 
   <!-- フッターボタン -->
   <div class="intro-footer">
-    <button class="btn btn-primary" id="introNextBtn" onclick="introNext()">次へ</button>
+    <button class="btn btn-primary" id="introStartBtn" onclick="introStart()" style="display:none;margin-bottom:6px;">はじめる</button>
+    <button class="btn btn-primary" id="introNextBtn" onclick="introNext()">次へ ▶</button>
     <button class="btn btn-outline" onclick="skipIntroForever()" style="font-size:12px;color:var(--text-sub);">次回からスキップ</button>
   </div>
 </div>
@@ -470,7 +481,8 @@ body {
       <div class="input-label">次の県まで（km）</div>
       <input type="number" class="input-number" id="inputKm" step="0.01" placeholder="576.55" onchange="updateDashboard()">
     </div>
-    <button class="btn btn-secondary" onclick="updateAndSaveBookmark()" style="font-size:13px;padding:10px;">🔗 共有用URLを生成</button>
+    <button class="btn btn-secondary" onclick="updateAndSaveBookmark()" style="font-size:13px;padding:10px;">✅ 反映</button>
+    <p style="font-size:11px;color:var(--text-sub);margin-top:8px;text-align:center;">バックアップor別端末に送りたいときは、設定へ</p>
   </div>
 
   <!-- Progress -->
@@ -618,8 +630,11 @@ body {
     <div class="card-title"><span class="icon">🔗</span> データのバックアップ・端末変更</div>
     <p style="font-size:12px;color:var(--text-sub);margin-bottom:8px;">データはこの端末のブラウザに自動保存されます。<br>📱 <strong>別の端末に引き継ぐとき</strong>や 💾 <strong>バックアップを取りたいとき</strong>は、下のURLを生成してコピーしておいてください。そのURLを新しい端末で開くと、同じ進捗から始められます。</p>
     <textarea id="bookmarkUrl" style="width:100%;height:60px;font-size:11px;border:1px solid var(--border);border-radius:6px;padding:8px;resize:none;" readonly></textarea>
-    <button class="btn btn-outline" onclick="copyBookmarkUrl()" style="margin-top:8px;font-size:13px;padding:10px;">📋 バックアップURLをコピー</button>
+    <button class="btn btn-outline" onclick="generateAndShowBackup()" style="margin-top:8px;font-size:13px;padding:10px;">💾 バックアップを生成</button>
+    <p style="font-size:11px;color:var(--text-sub);margin-top:6px;">押すとコピーモードになります。メモ帳等に貼り付けて保存できます。基本的にはブラウザに自動保存されます。</p>
+    <button class="btn btn-outline" id="copyBackupBtn" onclick="copyBookmarkUrl()" style="margin-top:4px;font-size:13px;padding:10px;display:none;">📋 URLをコピー</button>
   </div>
+  <button class="btn btn-outline" onclick="shareApp()" style="margin-top:4px;">👋 友達に紹介する</button>
   <button class="btn btn-outline" onclick="showIntroAgain()" style="margin-top:4px;">📖 アプリの説明をもう一度見る</button>
   <button class="btn btn-outline" onclick="resetAll()" style="margin-top:4px;color:var(--accent);">🔄 初期設定に戻す</button>
 </div>
@@ -792,11 +807,18 @@ function getDiaryEntries(station) {
   const entries = diaryByRoute[station.id] || [];
   if (!entries.length) return { unlocked: [], locked: [] };
 
-  const totalKm = state.km;
-  // この宿場に到達済みか（前の宿場のcumDist）
-  const arrivedKm = station.cumDist - station.nextDist;
-  const isArrived = totalKm >= arrivedKm;
-  const isPassed  = totalKm >= station.cumDist;
+  // totalDistを正確に計算（state.kmは次の県境までの残りkmなので使わない）
+  const prefDistMap = buildPrefDistMap();
+  const curPrefInfo = prefDistMap[state.pref];
+  if (!curPrefInfo) return { unlocked: [], locked: entries };
+  const totalDist = curPrefInfo.startCum + (curPrefInfo.dist - state.km);
+
+  // この宿場の位置（cumDist）と、前の宿場の位置
+  const stationCumDist = station.cumDist;
+  const arrivedCumDist = stationCumDist - station.nextDist;
+
+  const isArrived = totalDist >= arrivedCumDist;
+  const isPassed  = totalDist >= stationCumDist;
 
   if (!isArrived) return { unlocked: [], locked: entries };
 
@@ -808,15 +830,19 @@ function getDiaryEntries(station) {
   if (isPassed) {
     unlockedCoast = coast; lockedCoast = [];
   } else {
-    const progress = Math.min((totalKm - arrivedKm) / station.nextDist, 1);
-    const n = Math.floor(progress * coast.length);
+    const progress = Math.min((totalDist - arrivedCumDist) / station.nextDist, 1);
+    const n = Math.max(1, Math.floor(progress * coast.length));
     unlockedCoast = coast.slice(0, n);
     lockedCoast   = coast.slice(n);
   }
 
-  // inland/shitai: 宿場通過で全解放
-  const unlockedNonCoast = isPassed ? nonCoast : [];
-  const lockedNonCoast   = isPassed ? [] : nonCoast;
+  // inland/shitai: この宿場の県境を越えたら全解放
+  const stationPrefInfo = prefDistMap[station.pref];
+  const prefBorderCumDist = stationPrefInfo ? stationPrefInfo.endCum : stationCumDist;
+  const crossedPrefBorder = totalDist >= prefBorderCumDist;
+
+  const unlockedNonCoast = crossedPrefBorder ? nonCoast : [];
+  const lockedNonCoast   = crossedPrefBorder ? [] : nonCoast;
 
   return {
     unlocked: [...unlockedCoast, ...unlockedNonCoast],
@@ -1626,17 +1652,26 @@ function goToSlide(n) {
   document.querySelectorAll('.intro-dot').forEach((d, i) => {
     d.classList.toggle('active', i === n);
   });
-  const btn = document.getElementById('introNextBtn');
-  btn.textContent = n === 3 ? 'はじめる' : '次へ';
+  // スライド3（最後）のとき「はじめる」ボタンを追加表示（次へも残す）
+  const nextBtn  = document.getElementById('introNextBtn');
+  const startBtn = document.getElementById('introStartBtn');
+  if (nextBtn && startBtn) {
+    startBtn.style.display = n === 3 ? '' : 'none';
+    nextBtn.textContent = n === 3 ? '最初から' : '次へ ▶';
+  }
 }
 
 function introNext() {
   if (introCurrentSlide < 3) {
     goToSlide(introCurrentSlide + 1);
   } else {
-    // 最後のスライドで「はじめる」
-    document.getElementById('introOverlay').classList.add('hidden');
+    // 最後のスライドでは先頭に戻ってループ
+    goToSlide(0);
   }
+}
+
+function introStart() {
+  document.getElementById('introOverlay').classList.add('hidden');
 }
 
 function introPrev() {
@@ -1652,6 +1687,27 @@ function showIntroAgain() {
   introCurrentSlide = 0;
   goToSlide(0);
   document.getElementById('introOverlay').classList.remove('hidden');
+}
+
+
+function generateAndShowBackup() {
+  document.getElementById('bookmarkUrl').value = buildUrl();
+  document.getElementById('copyBackupBtn').style.display = '';
+  document.getElementById('bookmarkUrl').select();
+}
+
+function shareApp() {
+  const url = 'https://ino-walk.vercel.app/';
+  const text = '令和の伊能忠敬 - 万歩計で日本一周！伊能さんの測量日記を読みながら歩こう 👣';
+  if (navigator.share) {
+    navigator.share({ title: '令和の伊能忠敬', text: text, url: url });
+  } else {
+    navigator.clipboard.writeText(url).then(() => {
+      alert('URLをコピーしました！\n' + url + '\n友達に送ってね 👣');
+    }).catch(() => {
+      prompt('このURLを友達に送ってね！', url);
+    });
+  }
 }
 
 showIntroIfNeeded();
