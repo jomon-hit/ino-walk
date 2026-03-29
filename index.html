@@ -179,7 +179,7 @@ body {
 .diary-yado { font-weight:600; }
 .diary-yadoya { color:var(--text-sub); font-size:11px; }
 .diary-badge { background:var(--accent); color:#fff; font-size:9px; padding:1px 4px; border-radius:4px; }
-.diary-link { margin-left:auto; font-size:14px; text-decoration:none; }
+.diary-link { margin-left:auto; font-size:20px; text-decoration:none; padding:2px 6px; background:#e8f0ff; border-radius:6px; }
 .diary-route-link { display:block; margin-top:8px; text-align:center; font-size:12px; color:var(--accent3); text-decoration:none; padding:6px; background:#e8f0ff; border-radius:6px; }
 
 /* Input section */
@@ -259,9 +259,127 @@ body {
   flex:1; padding:8px; border:1px solid var(--border);
   border-radius:6px; font-size:14px; font-family:'Noto Sans JP',sans-serif;
 }
+/* ============================================================
+   イントロスライドショー
+   ============================================================ */
+#introOverlay {
+  position: fixed; inset: 0; z-index: 9999;
+  background: var(--bg);
+  display: flex; flex-direction: column;
+  overflow: hidden;
+}
+#introOverlay.hidden { display: none; }
+.intro-slides {
+  flex: 1; display: flex; overflow: hidden; position: relative;
+}
+.intro-track {
+  display: flex; width: 100%;
+  transition: transform 0.4s ease;
+}
+.intro-slide {
+  min-width: 100%; padding: 48px 28px 24px;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  text-align: center; gap: 20px;
+}
+.intro-icon { font-size: 64px; line-height: 1; }
+.intro-title {
+  font-family: 'Noto Serif JP', serif;
+  font-size: 22px; font-weight: 900;
+  color: var(--text); line-height: 1.4;
+}
+.intro-title .accent { color: var(--accent); }
+.intro-body {
+  font-size: 14px; line-height: 1.9;
+  color: var(--text-sub); max-width: 340px;
+}
+.intro-body strong { color: var(--text); }
+.intro-silhouette {
+  width: 80px; opacity: 0.85;
+  filter: drop-shadow(0 4px 12px rgba(44,36,22,0.18));
+}
+.intro-dots {
+  display: flex; justify-content: center; gap: 8px; padding: 12px 0;
+}
+.intro-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--border); transition: background 0.3s;
+  cursor: pointer;
+}
+.intro-dot.active { background: var(--accent); }
+.intro-footer {
+  padding: 8px 24px 36px;
+  display: flex; flex-direction: column; gap: 10px;
+}
 </style>
 </head>
 <body>
+
+<!-- ============================================================
+     イントロスライドショー
+     ============================================================ -->
+<div id="introOverlay">
+  <div class="intro-slides">
+    <div class="intro-track" id="introTrack">
+
+      <!-- スライド1: タイトル -->
+      <div class="intro-slide">
+        <img src="data:image/png;base64,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" class="intro-silhouette" alt="伊能忠敬">
+        <div class="intro-title">令和の<span class="accent">伊能忠敬</span></div>
+        <div class="intro-body">
+          江戸時代、伊能忠敬は55歳から17年かけて<strong>日本全国を歩いて測量</strong>しました。<br>
+          あなたも万歩計を片手に、その足跡をたどってみませんか。
+        </div>
+      </div>
+
+      <!-- スライド2: どんなアプリ？ -->
+      <div class="intro-slide">
+        <div class="intro-icon">👣</div>
+        <div class="intro-title">万歩計と<br>つながるお楽しみアプリ</div>
+        <div class="intro-body">
+          毎日歩いた距離を入力すると、伊能さんのルートを少しずつ進んでいきます。<br>
+          宿場に近づくほど、<strong>伊能さんの測量日記</strong>が少しずつ読めるようになります。
+        </div>
+      </div>
+
+      <!-- スライド3: 記録なし・安全 -->
+      <div class="intro-slide">
+        <div class="intro-icon">🔒</div>
+        <div class="intro-title">個人情報は<br>一切不要</div>
+        <div class="intro-body">
+          このアプリは<strong>ブラウザだけで動きます。</strong><br>
+          登録やログインは不要。あなたのデータはこの端末の中だけに保存され、<strong>どこかのサーバーには送られません。</strong>
+        </div>
+      </div>
+
+      <!-- スライド4: はじめよう -->
+      <div class="intro-slide">
+        <div class="intro-icon">🗾</div>
+        <div class="intro-title">さあ、<br>測量の旅へ出発！</div>
+        <div class="intro-body">
+          端末を変えたいときやバックアップが必要なときは、設定画面からURLを生成してください。
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ドットナビゲーション -->
+  <div class="intro-dots" id="introDots">
+    <div class="intro-dot active" onclick="goToSlide(0)"></div>
+    <div class="intro-dot" onclick="goToSlide(1)"></div>
+    <div class="intro-dot" onclick="goToSlide(2)"></div>
+    <div class="intro-dot" onclick="goToSlide(3)"></div>
+  </div>
+
+  <!-- フッターボタン -->
+  <div class="intro-footer">
+    <button class="btn btn-primary" id="introNextBtn" onclick="introNext()">次へ</button>
+    <button class="btn btn-outline" onclick="skipIntroForever()" style="font-size:12px;color:var(--text-sub);">次回からスキップ</button>
+  </div>
+</div>
+
+
 
 <!-- Settings button -->
 <div class="settings-btn" onclick="showSettings()" id="settingsBtn" style="display:none;">⚙️</div>
@@ -497,12 +615,13 @@ body {
     <div id="settArrivalLog"></div>
   </div>
   <div class="card">
-    <div class="card-title"><span class="icon">🔗</span> 共有用URL</div>
-    <p style="font-size:12px;color:var(--text-sub);margin-bottom:8px;">データは自動保存されます。他の人に共有したい場合はこのURLを送ってください。</p>
+    <div class="card-title"><span class="icon">🔗</span> データのバックアップ・端末変更</div>
+    <p style="font-size:12px;color:var(--text-sub);margin-bottom:8px;">データはこの端末のブラウザに自動保存されます。<br>📱 <strong>別の端末に引き継ぐとき</strong>や 💾 <strong>バックアップを取りたいとき</strong>は、下のURLを生成してコピーしておいてください。そのURLを新しい端末で開くと、同じ進捗から始められます。</p>
     <textarea id="bookmarkUrl" style="width:100%;height:60px;font-size:11px;border:1px solid var(--border);border-radius:6px;padding:8px;resize:none;" readonly></textarea>
-    <button class="btn btn-outline" onclick="copyBookmarkUrl()" style="margin-top:8px;font-size:13px;padding:10px;">📋 URLをコピー</button>
+    <button class="btn btn-outline" onclick="copyBookmarkUrl()" style="margin-top:8px;font-size:13px;padding:10px;">📋 バックアップURLをコピー</button>
   </div>
-  <button class="btn btn-outline" onclick="resetAll()" style="margin-top:12px;color:var(--accent);">🔄 初期設定に戻す</button>
+  <button class="btn btn-outline" onclick="showIntroAgain()" style="margin-top:4px;">📖 アプリの説明をもう一度見る</button>
+  <button class="btn btn-outline" onclick="resetAll()" style="margin-top:4px;color:var(--accent);">🔄 初期設定に戻す</button>
 </div>
 
 <!-- Page: Loading -->
@@ -1477,6 +1596,65 @@ async function init() {
     document.getElementById('pageWelcome').classList.add('active');
   }
 }
+
+
+// ============================================================
+// イントロスライドショー
+// ============================================================
+let introCurrentSlide = 0;
+const INTRO_SKIP_KEY = 'inou_intro_skip';
+
+function showIntroIfNeeded() {
+  const skip = localStorage.getItem(INTRO_SKIP_KEY);
+  if (skip === '1') {
+    document.getElementById('introOverlay').classList.add('hidden');
+  }
+  // スワイプ対応
+  const track = document.getElementById('introTrack');
+  let startX = 0;
+  track.addEventListener('touchstart', e => { startX = e.touches[0].clientX; });
+  track.addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].clientX - startX;
+    if (dx < -50) introNext();
+    else if (dx > 50) introPrev();
+  });
+}
+
+function goToSlide(n) {
+  introCurrentSlide = n;
+  document.getElementById('introTrack').style.transform = `translateX(-${n * 100}%)`;
+  document.querySelectorAll('.intro-dot').forEach((d, i) => {
+    d.classList.toggle('active', i === n);
+  });
+  const btn = document.getElementById('introNextBtn');
+  btn.textContent = n === 3 ? 'はじめる' : '次へ';
+}
+
+function introNext() {
+  if (introCurrentSlide < 3) {
+    goToSlide(introCurrentSlide + 1);
+  } else {
+    // 最後のスライドで「はじめる」
+    document.getElementById('introOverlay').classList.add('hidden');
+  }
+}
+
+function introPrev() {
+  if (introCurrentSlide > 0) goToSlide(introCurrentSlide - 1);
+}
+
+function skipIntroForever() {
+  localStorage.setItem(INTRO_SKIP_KEY, '1');
+  document.getElementById('introOverlay').classList.add('hidden');
+}
+
+function showIntroAgain() {
+  introCurrentSlide = 0;
+  goToSlide(0);
+  document.getElementById('introOverlay').classList.remove('hidden');
+}
+
+showIntroIfNeeded();
 
 init();
 </script>
