@@ -168,6 +168,20 @@ body {
   color:#fff; border-radius:8px; text-decoration:none; font-size:12px; font-weight:700;
 }
 
+/* 測量日記セクション */
+.diary-section { margin-top:12px; padding:12px; background:#f0f4e8; border-radius:8px; }
+.diary-label { font-size:11px; font-weight:700; color:var(--accent2); margin-bottom:8px; display:flex; align-items:center; gap:6px; }
+.diary-count { font-weight:400; color:var(--text-sub); font-size:10px; }
+.diary-entries { display:flex; flex-direction:column; gap:4px; }
+.diary-entry { font-size:12px; display:flex; align-items:center; gap:4px; padding:4px 6px; background:#fff; border-radius:6px; }
+.diary-entry.locked { color:var(--text-sub); background:#f5f0e8; }
+.diary-date { color:var(--accent3); font-size:11px; min-width:76px; }
+.diary-yado { font-weight:600; }
+.diary-yadoya { color:var(--text-sub); font-size:11px; }
+.diary-badge { background:var(--accent); color:#fff; font-size:9px; padding:1px 4px; border-radius:4px; }
+.diary-link { margin-left:auto; font-size:14px; text-decoration:none; }
+.diary-route-link { display:block; margin-top:8px; text-align:center; font-size:12px; color:var(--accent3); text-decoration:none; padding:6px; background:#e8f0ff; border-radius:6px; }
+
 /* Input section */
 .input-group { margin-bottom:14px; }
 .input-label { font-size:12px; font-weight:700; color:var(--text-sub); margin-bottom:6px; }
@@ -263,9 +277,28 @@ body {
     <div class="welcome-icon">🗾</div>
     <div class="welcome-title serif">令和の伊能忠敬</div>
     <div class="welcome-sub">歩いてつくろう日本地図！<br>万歩計と一緒に、日本一周の旅を記録しよう</div>
+    <p style="font-size:11px;color:var(--text-sub);margin:12px 0 24px;line-height:1.6;">
+      資料：<a href="https://www.inopedia.tokyo/index.html" target="_blank" style="color:var(--accent3);text-decoration:underline;">InoPedia（伊能忠敬と伊能図の大事典）</a>
+    </p>
     <button class="btn btn-primary" onclick="startNew()">今日からスタート</button>
     <button class="btn btn-outline" onclick="showHistorySetup()">途中から参加する</button>
   </div>
+</div>
+
+<!-- Page: Stride Setup (スタート直後) -->
+<div class="page" id="pageStrideSetup">
+  <div class="app-header">
+    <div class="app-title serif">👣 歩幅の設定</div>
+  </div>
+  <div class="card">
+    <p style="font-size:13px;color:var(--text-sub);margin-bottom:14px;line-height:1.6;">
+      万歩計に設定した歩幅を入れてください
+    </p>
+    <div class="input-label">歩幅（cm）<span style="font-size:11px;color:var(--accent3);margin-left:6px;">伊能さんの歩幅 69cm（雑録：1町158歩より算出）</span></div>
+    <input type="number" class="input-number" id="startStrideInput" step="0.1" placeholder="69.0">
+  </div>
+  <button class="btn btn-primary" onclick="saveStartStride()">設定して始める</button>
+  <button class="btn btn-outline" onclick="saveStartStride(true)">あとで設定する</button>
 </div>
 
 <!-- Page: History Setup -->
@@ -296,8 +329,8 @@ body {
       <button class="btn btn-outline" onclick="histCalcStride()" style="margin-top:8px;font-size:13px;padding:10px;">🔢 歩幅を計算</button>
       <div id="histCalcResult" style="display:none;text-align:center;margin-top:8px;font-size:15px;font-weight:700;color:var(--accent2);"></div>
     </div>
-    <div class="input-label">歩幅を直接入力（cm）</div>
-    <input type="number" class="input-number" id="histDirectStride" step="0.1" placeholder="62.0">
+    <div class="input-label">歩幅を直接入力（cm）<span style="font-size:11px;color:var(--accent3);margin-left:6px;">伊能さんの歩幅 69cm（雑録：1町158歩より算出）</span></div>
+    <input type="number" class="input-number" id="histDirectStride" step="0.1" placeholder="69.0">
   </div>
   <button class="btn btn-primary" onclick="saveHistory()">設定を保存してスタート</button>
 </div>
@@ -319,7 +352,7 @@ body {
       <div class="input-label">次の県まで（km）</div>
       <input type="number" class="input-number" id="inputKm" step="0.01" placeholder="576.55" onchange="updateDashboard()">
     </div>
-    <button class="btn btn-secondary" onclick="updateAndSaveBookmark()" style="font-size:13px;padding:10px;">📌 ブックマーク用URLを更新</button>
+    <button class="btn btn-secondary" onclick="updateAndSaveBookmark()" style="font-size:13px;padding:10px;">🔗 共有用URLを生成</button>
   </div>
 
   <!-- Progress -->
@@ -453,9 +486,9 @@ body {
       <button class="btn btn-outline" onclick="calcStride()" style="margin-top:8px;font-size:13px;padding:10px;">🔢 歩幅を計算</button>
       <div id="calcResult" style="display:none;text-align:center;margin-top:8px;font-size:15px;font-weight:700;color:var(--accent2);"></div>
     </div>
-    <div class="input-label">歩幅を直接入力（cm）</div>
+    <div class="input-label">歩幅を直接入力（cm）<span style="font-size:11px;color:var(--accent3);margin-left:6px;">伊能さんの歩幅 69cm（雑録：1町158歩より算出）</span></div>
     <div style="display:flex;gap:8px;align-items:center;">
-      <input type="number" class="input-number" id="directStride" step="0.1" placeholder="62.0" style="flex:1;">
+      <input type="number" class="input-number" id="directStride" step="0.1" placeholder="69.0" style="flex:1;">
       <button class="btn btn-secondary" onclick="saveStride()" style="width:auto;padding:10px 16px;font-size:13px;">保存</button>
     </div>
   </div>
@@ -464,8 +497,8 @@ body {
     <div id="settArrivalLog"></div>
   </div>
   <div class="card">
-    <div class="card-title"><span class="icon">🔗</span> ブックマークURL</div>
-    <p style="font-size:12px;color:var(--text-sub);margin-bottom:8px;">このURLをブックマークに保存してください。データが全て含まれています。</p>
+    <div class="card-title"><span class="icon">🔗</span> 共有用URL</div>
+    <p style="font-size:12px;color:var(--text-sub);margin-bottom:8px;">データは自動保存されます。他の人に共有したい場合はこのURLを送ってください。</p>
     <textarea id="bookmarkUrl" style="width:100%;height:60px;font-size:11px;border:1px solid var(--border);border-radius:6px;padding:8px;resize:none;" readonly></textarea>
     <button class="btn btn-outline" onclick="copyBookmarkUrl()" style="margin-top:8px;font-size:13px;padding:10px;">📋 URLをコピー</button>
   </div>
@@ -503,6 +536,7 @@ body {
 // CONFIG
 // ============================================================
 const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSQZ8WTbzooTSiBg_Svogan1Ne9OpuIDec35J-yM300ZygQdNFsh3AmOlA0b8BEf7Wq7MYYLfbMHpeD/pub?gid=1400730466&single=true&output=csv';
+const DIARY_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSc3JRnJCtEi3IU_VnzqcslKpWbjMxTQ2p8pjUW9IqwWfSCviEurLpX36n-eldmPmHwXYKvUNLs5bx1/pub?output=csv';
 const ROUTE_TOTAL = 19044.2; // km
 const MARATHON = 42.195;
 const TOKAIDO = 492; // km (東海道五十三次 片道)
@@ -514,6 +548,7 @@ const STRIDE_CM = 62; // 仮歩幅
 // ============================================================
 let masterData = [];
 let prefList = [];
+let diaryByRoute = {}; // route_id → [entries]
 let state = { start: '', pref: '', km: 0, stride: 0, arrivals: {} };
 let map = null;
 let markers = [];
@@ -597,6 +632,108 @@ async function loadData() {
 }
 
 // ============================================================
+// DIARY DATA
+// ============================================================
+async function loadDiary() {
+  try {
+    const resp = await fetch(DIARY_CSV_URL);
+    if (!resp.ok) return;
+    const text = await resp.text();
+    const rows = parseCSV(text);
+    if (rows.length < 2) return;
+    // header: entry_id, route_id, 測量次, 隊, 宿泊日, 西暦, 和暦, 宿泊地, 宿泊場所, 現・市町村名, entry_type, pref
+    diaryByRoute = {};
+    rows.slice(1).forEach(r => {
+      const routeId = parseInt(r[1]);
+      if (!routeId) return;
+      if (!diaryByRoute[routeId]) diaryByRoute[routeId] = [];
+      diaryByRoute[routeId].push({
+        entry_id:   r[0],
+        route_id:   routeId,
+        survey:     r[2],
+        tai:        r[3],
+        nichi:      r[4],
+        seireki:    r[5],
+        wareki:     r[6],
+        yado:       r[7],
+        yadoya:     r[8],
+        place:      r[9],
+        entry_type: r[10],
+        pref:       r[11],
+      });
+    });
+    console.log(`日記データ読み込み完了: ${Object.keys(diaryByRoute).length}宿場`);
+  } catch(e) {
+    console.log('日記データ読み込み失敗:', e);
+  }
+}
+
+// 日記エントリのアンロック判定
+function getDiaryEntries(station) {
+  const entries = diaryByRoute[station.id] || [];
+  if (!entries.length) return { unlocked: [], locked: [] };
+
+  const totalKm = state.km;
+  // この宿場に到達済みか（前の宿場のcumDist）
+  const arrivedKm = station.cumDist - station.nextDist;
+  const isArrived = totalKm >= arrivedKm;
+  const isPassed  = totalKm >= station.cumDist;
+
+  if (!isArrived) return { unlocked: [], locked: entries };
+
+  const coast    = entries.filter(e => e.entry_type === 'coast');
+  const nonCoast = entries.filter(e => e.entry_type !== 'coast');
+
+  // coast: 次の宿場への進捗に応じて段階解放
+  let unlockedCoast, lockedCoast;
+  if (isPassed) {
+    unlockedCoast = coast; lockedCoast = [];
+  } else {
+    const progress = Math.min((totalKm - arrivedKm) / station.nextDist, 1);
+    const n = Math.floor(progress * coast.length);
+    unlockedCoast = coast.slice(0, n);
+    lockedCoast   = coast.slice(n);
+  }
+
+  // inland/shitai: 宿場通過で全解放
+  const unlockedNonCoast = isPassed ? nonCoast : [];
+  const lockedNonCoast   = isPassed ? [] : nonCoast;
+
+  return {
+    unlocked: [...unlockedCoast, ...unlockedNonCoast],
+    locked:   [...lockedCoast,   ...lockedNonCoast],
+  };
+}
+
+function renderDiarySection(station) {
+  const { unlocked, locked } = getDiaryEntries(station);
+  if (!unlocked.length && !locked.length) return '';
+
+  const entryHtml = (e, isLocked) => {
+    if (isLocked) {
+      return `<div class="diary-entry locked">🔒 <span class="diary-date">${e.seireki}</span> <span class="diary-yado">${e.yado}</span></div>`;
+    }
+    const url = e.entry_id
+      ? `https://www.inopedia.tokyo/database/searchName/entry.php?id=${e.entry_id}`
+      : null;
+    const badge = e.entry_type === 'shitai' ? '<span class="diary-badge">支隊</span>' : '';
+    const link  = url ? `<a href="${url}" target="_blank" class="diary-link">📄</a>` : '';
+    return `<div class="diary-entry">${badge}<span class="diary-date">${e.seireki}</span> <span class="diary-yado">${e.yado}</span>${e.yadoya ? `<span class="diary-yadoya">（${e.yadoya}）` : ''}</span>${link}</div>`;
+  };
+
+  const rows = [
+    ...unlocked.map(e => entryHtml(e, false)),
+    ...locked.map(e => entryHtml(e, true)),
+  ].join('');
+
+  return `<div class="diary-section">
+    <div class="diary-label">📖 測量日記 <span class="diary-count">${unlocked.length}/${unlocked.length + locked.length}件</span></div>
+    <div class="diary-entries">${rows}</div>
+    ${station.inopediaRoute ? `<a href="${station.inopediaRoute}" target="_blank" class="diary-route-link">🗺️ ルート図を見る</a>` : ''}
+  </div>`;
+}
+
+// ============================================================
 // URL PARAMS
 // ============================================================
 function readUrlParams() {
@@ -614,9 +751,60 @@ function readUrlParams() {
         if (pref && date) state.arrivals[pref] = date;
       });
     }
+    return !!state.start; // URLにデータがあったか
   } catch(e) {
     console.log('URL params not available (local file mode)');
+    return false;
   }
+}
+
+const LS_KEY = 'inou_walk_state';
+
+function saveToLocalStorage() {
+  try {
+    localStorage.setItem(LS_KEY, JSON.stringify(state));
+  } catch(e) {
+    console.log('localStorage save failed:', e);
+  }
+}
+
+function loadFromLocalStorage() {
+  try {
+    const saved = localStorage.getItem(LS_KEY);
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      state.start = parsed.start || '';
+      state.pref = parsed.pref || '';
+      state.km = parseFloat(parsed.km) || 0;
+      state.stride = parseFloat(parsed.stride) || 0;
+      state.arrivals = parsed.arrivals || {};
+      return !!state.start;
+    }
+  } catch(e) {
+    console.log('localStorage load failed:', e);
+  }
+  return false;
+}
+
+function loadState() {
+  // 優先順位: URLパラメータ > localStorage
+  const hasUrl = readUrlParams();
+  if (hasUrl) {
+    // URL共有リンクから開いた → localStorageにも保存
+    saveToLocalStorage();
+    // URLパラメータをクリーンアップ（次回からlocalStorageで開くため）
+    try {
+      if (window.history && window.history.replaceState) {
+        const base = window.location.origin !== 'null' 
+          ? window.location.origin + window.location.pathname 
+          : window.location.href.split('?')[0];
+        window.history.replaceState({}, '', base);
+      }
+    } catch(e) {}
+    return;
+  }
+  // URLパラメータなし → localStorageから復元
+  loadFromLocalStorage();
 }
 
 function buildUrl() {
@@ -638,14 +826,10 @@ function buildUrl() {
   }
 }
 
-function updateUrl() {
-  try {
-    const url = buildUrl();
-    window.history.replaceState({}, '', url);
-  } catch(e) {
-    // file:// protocol doesn't support replaceState - silently ignore
-    console.log('URL update skipped (local file mode)');
-  }
+function saveState() {
+  // localStorageに自動保存（毎回）
+  saveToLocalStorage();
+  // URLは更新しない（クリーンなURLを維持）
 }
 
 // ============================================================
@@ -756,6 +940,7 @@ function formatDateShort(str) {
 function updateDashboard() {
   state.pref = document.getElementById('inputPref').value;
   state.km = parseFloat(document.getElementById('inputKm').value) || 0;
+  saveState(); // 自動保存
   
   const c = calcProgress();
   if (!c.totalDist && c.totalDist !== 0) return;
@@ -862,7 +1047,7 @@ let inouIcon = null;
 function getInouIcon() {
   if (!inouIcon) {
     inouIcon = L.icon({
-  iconUrl: 'data:image/png;base64,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',
+  iconUrl: 'data:image/jpeg;base64,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',
   iconSize: [64, 80],
   iconAnchor: [32, 80],
   popupAnchor: [0, -80]
@@ -1001,11 +1186,8 @@ function showStationDetail(s) {
     ${s.survey ? `<div class="inou-section">
       <div class="inou-label">🗺️ 伊能忠敬 ${s.survey}測量</div>
       <div style="font-size:13px;margin-top:4px;">${s.surveyYear}</div>
-      ${s.inopediaDiary ? `<div class="inou-links">
-        <a href="${s.inopediaDiary}" target="_blank">📖 測量日記を読む</a>
-        <a href="${s.inopediaRoute}" target="_blank">🗺️ ルート図を見る</a>
-      </div>` : ''}
     </div>` : ''}
+    ${renderDiarySection(s)}
   `;
   modal.classList.add('show');
 }
@@ -1043,13 +1225,30 @@ function switchTab(tab) {
 // ============================================================
 // WELCOME / SETUP
 // ============================================================
+function welcomeCalcStride() {
+  // 未使用になったが互換性のため残す
+}
+
 function startNew() {
   const today = new Date();
   state.start = `${today.getFullYear()}${(today.getMonth()+1).toString().padStart(2,'0')}${today.getDate().toString().padStart(2,'0')}`;
   state.pref = prefList[0];
   state.km = masterData[0].nextDist;
   state.arrivals = { '東京': state.start };
-  updateUrl();
+  
+  // 歩幅設定ページへ
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('pageStrideSetup').classList.add('active');
+}
+
+function saveStartStride(skip) {
+  if (!skip) {
+    const strideVal = parseFloat(document.getElementById('startStrideInput').value) || 0;
+    if (strideVal > 20 && strideVal < 200) {
+      state.stride = strideVal;
+    }
+  }
+  saveState();
   enterApp();
 }
 
@@ -1127,7 +1326,7 @@ function saveHistory() {
     }
   });
   
-  updateUrl();
+  saveState();
   enterApp();
 }
 
@@ -1191,7 +1390,7 @@ function saveStartDate() {
   const val = document.getElementById('settStartDate').value;
   if (val) {
     state.start = val.replace(/-/g, '');
-    updateUrl();
+    saveState();
     updateDashboard();
   }
 }
@@ -1213,7 +1412,7 @@ function saveStride() {
   const val = parseFloat(document.getElementById('directStride').value) || 0;
   if (val > 20 && val < 200) {
     state.stride = val;
-    updateUrl();
+    saveState();
     document.getElementById('strideValue').textContent = `${val.toFixed(1)} cm`;
     updateDashboard();
     alert(`歩幅を ${val.toFixed(1)} cm に設定しました`);
@@ -1225,21 +1424,21 @@ function saveStride() {
 function updateAndSaveBookmark() {
   state.pref = document.getElementById('inputPref').value;
   state.km = parseFloat(document.getElementById('inputKm').value) || 0;
-  updateUrl();
+  saveState();
   
   const url = buildUrl();
   try {
     if (navigator.clipboard && window.isSecureContext) {
       navigator.clipboard.writeText(url).then(() => {
-        alert('URLをコピーしました！\nブックマークを更新してください。');
+        alert('共有用URLをコピーしました！\n他の人に送ると、同じ進捗から始められます。');
       }).catch(() => {
-        prompt('このURLをコピーしてブックマークに保存してください：', url);
+        prompt('このURLを共有相手に送ってください：', url);
       });
     } else {
-      prompt('このURLをコピーしてブックマークに保存してください：', url);
+      prompt('このURLを共有相手に送ってください：', url);
     }
   } catch(e) {
-    prompt('このURLをコピーしてブックマークに保存してください：', url);
+    prompt('このURLを共有相手に送ってください：', url);
   }
 }
 
@@ -1260,6 +1459,9 @@ function copyBookmarkUrl() {
 function resetAll() {
   if (confirm('初期設定に戻しますか？\n到着記録も消えます。')) {
     try {
+      localStorage.removeItem(LS_KEY);
+    } catch(e) {}
+    try {
       window.location.href = window.location.pathname || window.location.href.split('?')[0];
     } catch(e) {
       window.location.reload();
@@ -1271,8 +1473,9 @@ function resetAll() {
 // INIT
 // ============================================================
 async function init() {
-  readUrlParams();
+  loadState();
   await loadData();
+  loadDiary(); // 日記データを非同期で読み込み（完了を待たない）
   
   if (!masterData.length) return;
   
