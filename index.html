@@ -221,14 +221,7 @@ body {
 .welcome-title { font-size:28px; font-weight:900; margin-bottom:8px; }
 .welcome-sub { font-size:14px; color:var(--text-sub); margin-bottom:32px; line-height:1.6; }
 
-/* Settings gear */
-.settings-btn {
-  position:fixed; top:12px; right:12px; z-index:500;
-  width:36px; height:36px; border-radius:50%;
-  background:var(--bg-card); border:1px solid var(--border);
-  display:flex; align-items:center; justify-content:center;
-  cursor:pointer; font-size:18px; box-shadow:0 2px 8px var(--shadow);
-}
+
 
 /* Arrival log */
 .log-entry { display:flex; align-items:center; gap:10px; padding:10px 0; }
@@ -352,6 +345,18 @@ body {
         </div>
       </div>
 
+      <!-- スライド5: 歩数カウントモード -->
+      <div class="intro-slide">
+        <div class="intro-icon">👟</div>
+        <div class="intro-title">スマホの歩数カウントでも<br>参加できます！</div>
+        <div class="intro-body">
+          万歩計がなくても大丈夫。<br>
+          スマホの歩数カウントで参加できます。<br><br>
+          ただし、歩数を入力しないと距離は進みません。<br>
+          歩数入力は<strong>1日あたり10万歩まで</strong>です。
+        </div>
+      </div>
+
       <!-- スライド4: はじめよう -->
       <div class="intro-slide">
         <div class="intro-icon">🗾</div>
@@ -380,20 +385,44 @@ body {
     <div class="intro-dot" onclick="goToSlide(1)"></div>
     <div class="intro-dot" onclick="goToSlide(2)"></div>
     <div class="intro-dot" onclick="goToSlide(3)"></div>
+    <div class="intro-dot" onclick="goToSlide(4)"></div>
   </div>
 
   <!-- フッターボタン -->
   <div class="intro-footer">
-    <button class="btn btn-primary" id="introStartBtn" onclick="introStart()" style="display:none;margin-bottom:6px;">はじめる</button>
     <button class="btn btn-primary" id="introNextBtn" onclick="introNext()">次へ ▶</button>
-    <button class="btn btn-outline" onclick="skipIntroForever()" style="font-size:12px;color:var(--text-sub);">次回からスキップ</button>
+    <div id="introLastBtns" style="display:none;width:100%;display:none;flex-direction:column;gap:8px;">
+      <button class="btn btn-primary" onclick="introGoStart()">今日からスタート</button>
+      <button class="btn btn-outline" onclick="introGoHistory()">既に測量中（途中から参加）</button>
+      <button class="btn btn-outline" onclick="goToSlide(0)" style="font-size:12px;">もう一度説明を読む</button>
+      <button class="btn btn-outline" onclick="skipIntroForever()" style="font-size:11px;color:var(--text-sub);border-color:var(--border);">次回からスキップ</button>
+    </div>
   </div>
 </div>
 
 
 
-<!-- Settings button -->
-<div class="settings-btn" onclick="showSettings()" id="settingsBtn" style="display:none;">⚙️</div>
+
+
+<!-- Modal: 歩数入力 -->
+<div class="modal-overlay" id="stepsModal" onclick="closeStepsModal(event)">
+  <div class="modal-content" style="padding:24px;">
+    <div style="font-size:16px;font-weight:900;margin-bottom:16px;">👟 歩数から距離を計算</div>
+    <div style="font-size:12px;color:var(--text-sub);margin-bottom:16px;">
+      今日歩いた歩数を入力してください。設定した歩幅で距離を計算し、次の県までの残りから引きます。
+    </div>
+    <div id="stepsModalInfo" style="font-size:11px;color:var(--accent3);text-align:center;margin-bottom:8px;"></div>
+    <div class="input-group">
+      <div class="input-label">今日の歩数</div>
+      <input type="number" class="input-number" id="stepsInput" placeholder="8000" style="font-size:20px;text-align:center;" max="100000">
+    </div>
+    <div id="stepsCalcResult" style="text-align:center;font-size:13px;color:var(--accent2);margin:12px 0;min-height:20px;"></div>
+    <div style="display:flex;gap:10px;margin-top:8px;">
+      <button class="btn btn-outline" onclick="closeStepsModal()" style="flex:1;">キャンセル</button>
+      <button class="btn btn-primary" onclick="applySteps()" style="flex:1;">✅ 反映</button>
+    </div>
+  </div>
+</div>
 
 <!-- Modal for station detail -->
 <div class="modal-overlay" id="stationModal" onclick="closeModal(event)">
@@ -410,7 +439,7 @@ body {
       資料：<a href="https://www.inopedia.tokyo/index.html" target="_blank" style="color:var(--accent3);text-decoration:underline;">InoPedia（伊能忠敬と伊能図の大事典）</a>
     </p>
     <button class="btn btn-primary" onclick="startNew()">今日からスタート</button>
-    <button class="btn btn-outline" onclick="showHistorySetup()">途中から参加する</button>
+    <button class="btn btn-outline" onclick="showHistorySetup()">既に測量中（途中から参加）</button>
   </div>
 </div>
 
@@ -482,6 +511,7 @@ body {
       <input type="number" class="input-number" id="inputKm" step="0.01" placeholder="576.55" onchange="updateDashboard()">
     </div>
     <button class="btn btn-secondary" onclick="updateAndSaveBookmark()" style="font-size:13px;padding:10px;">✅ 反映</button>
+    <button class="btn btn-outline" onclick="openStepsModal()" style="font-size:12px;padding:8px;margin-top:6px;color:var(--accent3);">👟 万歩計を持っていない方はこちら</button>
     <p style="font-size:11px;color:var(--text-sub);margin-top:8px;text-align:center;">バックアップor別端末に送りたいときは、設定へ</p>
   </div>
 
@@ -1204,8 +1234,18 @@ function updateMap() {
     let marker;
     
     if (isCurrent) {
-      // 現在地は伊能さんアイコン
-      marker = L.marker([s.lat, s.lng], { icon: getInouIcon() }).addTo(map);
+      // 現在地は伊能さんアイコン（現在地と次の宿場の間に補間）
+      let markerLat = s.lat, markerLng = s.lng;
+      const nextStation = masterData.find(ns => ns.id === s.id + 1);
+      if (nextStation && s.nextDist > 0) {
+        const sCumDist2 = getStationRealCumDist(s);
+        const progress = Math.min(Math.max((totalDist - sCumDist2) / s.nextDist, 0), 1);
+        // 5分割で表示（0, 0.2, 0.4, 0.6, 0.8, 1.0）
+        const step = Math.floor(progress * 5) / 5;
+        markerLat = s.lat + step * (nextStation.lat - s.lat);
+        markerLng = s.lng + step * (nextStation.lng - s.lng);
+      }
+      marker = L.marker([markerLat, markerLng], { icon: getInouIcon() }).addTo(map);
       marker.bindPopup(`
         <div style="font-family:'Noto Sans JP',sans-serif;min-width:200px;">
           <strong style="font-size:15px;">📍 現在地：${s.station}</strong><br>
@@ -1464,7 +1504,7 @@ function enterApp() {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById('pageHome').classList.add('active');
   document.getElementById('tabBar').style.display = 'flex';
-  document.getElementById('settingsBtn').style.display = 'flex';
+
   
   // Set input values
   document.getElementById('inputPref').value = state.pref;
@@ -1653,16 +1693,17 @@ function goToSlide(n) {
     d.classList.toggle('active', i === n);
   });
   // スライド3（最後）のとき「はじめる」ボタンを追加表示（次へも残す）
-  const nextBtn  = document.getElementById('introNextBtn');
-  const startBtn = document.getElementById('introStartBtn');
-  if (nextBtn && startBtn) {
-    startBtn.style.display = n === 3 ? '' : 'none';
-    nextBtn.textContent = n === 3 ? '最初から' : '次へ ▶';
+  const nextBtn   = document.getElementById('introNextBtn');
+  const lastBtns  = document.getElementById('introLastBtns');
+  if (nextBtn && lastBtns) {
+    nextBtn.style.display      = n === 4 ? 'none' : '';
+    lastBtns.style.display     = n === 4 ? 'flex' : 'none';
+    lastBtns.style.flexDirection = 'column';
   }
 }
 
 function introNext() {
-  if (introCurrentSlide < 3) {
+  if (introCurrentSlide < 4) {
     goToSlide(introCurrentSlide + 1);
   } else {
     // 最後のスライドでは先頭に戻ってループ
@@ -1672,6 +1713,17 @@ function introNext() {
 
 function introStart() {
   document.getElementById('introOverlay').classList.add('hidden');
+}
+
+function introGoStart() {
+  document.getElementById('introOverlay').classList.add('hidden');
+  // ウェルカム画面のstartNewを呼ぶ
+  startNew();
+}
+
+function introGoHistory() {
+  document.getElementById('introOverlay').classList.add('hidden');
+  showHistorySetup();
 }
 
 function introPrev() {
@@ -1707,6 +1759,111 @@ function shareApp() {
     }).catch(() => {
       prompt('このURLを友達に送ってね！', url);
     });
+  }
+}
+
+
+// ============================================================
+// 歩数入力モーダル
+// ============================================================
+const STEPS_LOG_KEY = 'inou_steps_log'; // {date: 'YYYY-MM-DD', used: n}
+
+function getTodayStr() {
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+
+function getStepsUsedToday() {
+  try {
+    const log = JSON.parse(localStorage.getItem(STEPS_LOG_KEY) || '{}');
+    return log.date === getTodayStr() ? (log.used || 0) : 0;
+  } catch(e) { return 0; }
+}
+
+function addStepsUsedToday(n) {
+  const used = getStepsUsedToday() + n;
+  localStorage.setItem(STEPS_LOG_KEY, JSON.stringify({ date: getTodayStr(), used }));
+}
+
+function openStepsModal() {
+  const used = getStepsUsedToday();
+  const remaining = 100000 - used;
+  if (remaining <= 0) {
+    alert('今日の歩数入力は終了しました。\n（1日1回・上限10万歩）\n明日またどうぞ！');
+    return;
+  }
+  document.getElementById('stepsInput').value = '';
+  document.getElementById('stepsCalcResult').textContent = '';
+  document.getElementById('stepsModal').classList.add('show');
+  // 残り歩数を案内
+  const info = document.getElementById('stepsModalInfo');
+  if (info) info.textContent = used > 0 ? `本日残り ${remaining.toLocaleString()} 歩まで入力できます` : '本日の上限：10万歩';
+  setTimeout(() => document.getElementById('stepsInput').focus(), 100);
+  document.getElementById('stepsInput').oninput = previewSteps;
+}
+
+function closeStepsModal(e) {
+  if (!e || e.target === document.getElementById('stepsModal')) {
+    document.getElementById('stepsModal').classList.remove('show');
+  }
+}
+
+function previewSteps() {
+  const steps = parseInt(document.getElementById('stepsInput').value) || 0;
+  if (!steps) { document.getElementById('stepsCalcResult').textContent = ''; return; }
+  const stride = state.stride > 0 ? state.stride : STRIDE_CM;
+  const distKm = (steps * stride) / 100000;
+  const newKm = Math.max(0, (state.km || 0) - distKm);
+  document.getElementById('stepsCalcResult').textContent =
+    `${steps.toLocaleString()}歩 × ${stride}cm = ${distKm.toFixed(2)}km → 残り ${newKm.toFixed(2)}km`;
+}
+
+function applySteps() {
+  const steps = parseInt(document.getElementById('stepsInput').value) || 0;
+  if (!steps) { alert('歩数を入力してください'); return; }
+  if (steps > 100000) { alert('1日の上限は10万歩です'); return; }
+  const used = getStepsUsedToday();
+  const remaining = 100000 - used;
+  if (steps > remaining) {
+    alert(`本日の残り入力可能歩数は ${remaining.toLocaleString()} 歩です`);
+    return;
+  }
+  const stride = state.stride > 0 ? state.stride : STRIDE_CM;
+  const distKm = (steps * stride) / 100000;
+  const newKm = Math.max(0, (state.km || 0) - distKm);
+  
+  // 次の県に突入した場合の処理
+  if (newKm <= 0 && state.km > 0) {
+    // 次の県へ自動移動
+    const currentPrefIdx = prefList.indexOf(state.pref);
+    if (currentPrefIdx >= 0 && currentPrefIdx < prefList.length - 1) {
+      const nextPref = prefList[currentPrefIdx + 1];
+      const nextPrefStation = masterData.find(d => d.pref === nextPref);
+      if (nextPrefStation) {
+        // 到着記録
+        if (!state.arrivals[state.pref]) {
+          state.arrivals[state.pref] = new Date().toISOString().slice(0, 10);
+        }
+        state.pref = nextPref;
+        // 次の県内の残りkm（超過分を引く）
+        const overflow = distKm - (state.km || 0);
+        state.km = Math.max(0, nextPrefStation.nextDist - overflow);
+        document.getElementById('inputPref').value = nextPref;
+        document.getElementById('inputKm').value = state.km.toFixed(2);
+      }
+    }
+  } else {
+    state.km = newKm;
+    document.getElementById('inputKm').value = newKm.toFixed(2);
+  }
+  
+  addStepsUsedToday(steps);
+  saveState();
+  updateDashboard();
+  document.getElementById('stepsModal').classList.remove('show');
+  const usedNow = getStepsUsedToday();
+  if (usedNow >= 100000) {
+    alert(`反映しました！\n本日の歩数入力はこれで終了です。お疲れさまでした！`);
   }
 }
 
