@@ -424,6 +424,22 @@ body {
   </div>
 </div>
 
+
+<!-- Modal: 残距離修正 -->
+<div class="modal-overlay" id="editKmModal" onclick="closeEditKm(event)">
+  <div class="modal-content" style="padding:24px;">
+    <div style="font-size:16px;font-weight:900;margin-bottom:16px;">✏️ 残距離を修正</div>
+    <div class="input-group">
+      <div class="input-label">次の県まで（km）</div>
+      <input type="number" class="input-number" id="editKmInput" step="0.01" style="font-size:20px;text-align:center;">
+    </div>
+    <div style="display:flex;gap:10px;margin-top:16px;">
+      <button class="btn btn-outline" onclick="closeEditKm()" style="flex:1;">キャンセル</button>
+      <button class="btn btn-primary" onclick="applyEditKm()" style="flex:1;">✅ 確定</button>
+    </div>
+  </div>
+</div>
+
 <!-- Modal for station detail -->
 <div class="modal-overlay" id="stationModal" onclick="closeModal(event)">
   <div class="modal-content" id="modalContent"></div>
@@ -436,7 +452,7 @@ body {
     <div class="welcome-title serif">令和の伊能忠敬</div>
     <div class="welcome-sub">歩いてつくろう日本地図！<br>万歩計と一緒に、日本一周の旅を記録しよう</div>
     <p style="font-size:11px;color:var(--text-sub);margin:12px 0 24px;line-height:1.6;">
-      資料：<a href="https://www.inopedia.tokyo/index.html" target="_blank" style="color:var(--accent3);text-decoration:underline;">InoPedia（伊能忠敬と伊能図の大事典）</a>
+      資料：<a href="https://www.inopedia.tokyo/index.html" style="color:var(--accent3);text-decoration:underline;">InoPedia（伊能忠敬と伊能図の大事典）</a>
     </p>
     <button class="btn btn-primary" onclick="startNew()">今日からスタート</button>
     <button class="btn btn-outline" onclick="showHistorySetup()">既に測量中（途中から参加）</button>
@@ -561,7 +577,7 @@ body {
     <div class="card-title"><span class="icon">🏔️</span> 次の都道府県へ</div>
     <div class="next-pref">
       <span class="label">現在地</span><span class="value big" id="npCurrent">-</span>
-      <span class="label">次の県まで</span><span class="value" id="npDist">- km</span>
+      <span class="label">次の県まで</span><span class="value" id="npDist" style="display:flex;align-items:center;gap:6px;">- km <button onclick="openEditKm()" style="font-size:11px;padding:2px 8px;border:1px solid var(--border);border-radius:6px;background:var(--bg);cursor:pointer;color:var(--accent3);">✏️修正</button></span>
       <span class="label">あと約</span><span class="value" id="npSteps">- 歩</span>
       <span class="label">今のペースなら</span><span class="value" id="npDays">- 日</span>
     </div>
@@ -892,7 +908,7 @@ function renderDiarySection(station) {
       ? `https://www.inopedia.tokyo/database/searchName/entry.php?id=${e.entry_id}`
       : null;
     const badge = e.entry_type === 'shitai' ? '<span class="diary-badge">支隊</span>' : '';
-    const link  = url ? `<a href="${url}" target="_blank" class="diary-link">📄</a>` : '';
+    const link  = url ? `<a href="${url}" class="diary-link">📄</a>` : '';
     return `<div class="diary-entry">${badge}<span class="diary-date">${e.seireki}</span> <span class="diary-yado">${e.yado}</span>${e.yadoya ? `<span class="diary-yadoya">（${e.yadoya}）` : ''}</span>${link}</div>`;
   };
 
@@ -904,7 +920,7 @@ function renderDiarySection(station) {
   return `<div class="diary-section">
     <div class="diary-label">📖 測量日記 <span class="diary-count">${unlocked.length}/${unlocked.length + locked.length}件</span></div>
     <div class="diary-entries">${rows}</div>
-    ${station.inopediaRoute ? `<a href="${station.inopediaRoute}" target="_blank" class="diary-route-link">🗺️ ルート図を見る</a>` : ''}
+    ${station.inopediaRoute ? `<a href="${station.inopediaRoute}" class="diary-route-link">🗺️ ルート図を見る</a>` : ''}
   </div>`;
 }
 
@@ -1267,7 +1283,7 @@ function updateMap() {
           <span style="font-size:11px;color:#666;">${s.place}</span><br>
           <span style="font-size:11px;">累積: ${sCumDist.toFixed(1)} km</span>
           ${s.survey ? `<br><span style="font-size:11px;color:#3a6ea5;">🗺️ ${s.survey} ${s.surveyYear}</span>` : ''}
-          ${s.inopediaDiary ? `<br><a href="${s.inopediaDiary}" target="_blank" style="font-size:11px;">📖 InoPedia</a>` : ''}
+          ${s.inopediaDiary ? `<br><a href="${s.inopediaDiary}" style="font-size:11px;">📖 InoPedia</a>` : ''}
         </div>
       `);
       marker.on('click', () => showStationDetail(s));
@@ -1865,6 +1881,29 @@ function applySteps() {
   if (usedNow >= 100000) {
     alert(`反映しました！\n本日の歩数入力はこれで終了です。お疲れさまでした！`);
   }
+}
+
+
+function openEditKm() {
+  document.getElementById('editKmInput').value = state.km || 0;
+  document.getElementById('editKmModal').classList.add('show');
+  setTimeout(() => document.getElementById('editKmInput').focus(), 100);
+}
+
+function closeEditKm(e) {
+  if (!e || e.target === document.getElementById('editKmModal')) {
+    document.getElementById('editKmModal').classList.remove('show');
+  }
+}
+
+function applyEditKm() {
+  const val = parseFloat(document.getElementById('editKmInput').value);
+  if (isNaN(val) || val < 0) { alert('正しい値を入力してください'); return; }
+  state.km = val;
+  document.getElementById('inputKm').value = val.toFixed(2);
+  saveState();
+  updateDashboard();
+  document.getElementById('editKmModal').classList.remove('show');
 }
 
 showIntroIfNeeded();
