@@ -821,25 +821,25 @@ async function loadDiary() {
     const text = await resp.text();
     const rows = parseCSV(text);
     if (rows.length < 2) return;
-    // header: entry_id, route_id, 測量次, 隊, 宿泊日, 西暦, 和暦, 宿泊地, 宿泊場所, 現・市町村名, entry_type, pref
+    // header: 県ID, entry_id, route_id, 測量次, 隊, 宿泊日, 西暦, 和暦, 宿泊地, 宿泊場所, 現・市町村名, entry_type, pref
     diaryByRoute = {};
     rows.slice(1).forEach(r => {
-      const routeId = parseInt(r[1]);
-      if (!routeId) return;
-      if (!diaryByRoute[routeId]) diaryByRoute[routeId] = [];
-      diaryByRoute[routeId].push({
-        entry_id:   r[0],
-        route_id:   routeId,
-        survey:     r[2],
-        tai:        r[3],
-        nichi:      r[4],
-        seireki:    r[5],
-        wareki:     r[6],
-        yado:       r[7],
-        yadoya:     r[8],
-        place:      r[9],
-        entry_type: r[10],
-        pref:       r[11],
+      const prefNo = parseInt(r[0]); // A列=県ID（順路番号）
+      if (!prefNo) return;
+      if (!diaryByRoute[prefNo]) diaryByRoute[prefNo] = [];
+      diaryByRoute[prefNo].push({
+        entry_id:   r[1],
+        route_id:   parseInt(r[2]),
+        survey:     r[3],
+        tai:        r[4],
+        nichi:      r[5],
+        seireki:    r[6],
+        wareki:     r[7],
+        yado:       r[8],
+        yadoya:     r[9],
+        place:      r[10],
+        entry_type: r[11],
+        pref:       r[12],
       });
     });
     console.log(`日記データ読み込み完了: ${Object.keys(diaryByRoute).length}宿場`);
@@ -850,11 +850,14 @@ async function loadDiary() {
 
 // 日記エントリのアンロック判定
 function getDiaryEntries(station) {
-  const entries = diaryByRoute[station.id] || [];
+  // station.prefから順路番号を取得してdiaryByRouteを引く
+  const prefDistMap = buildPrefDistMap();
+  const stationPrefInfo = prefDistMap[station.pref];
+  const prefNo = stationPrefInfo ? prefList.indexOf(station.pref) + 1 : null;
+  const entries = (prefNo ? diaryByRoute[prefNo] : null) || [];
   if (!entries.length) return { unlocked: [], locked: [] };
 
   // totalDistを正確に計算（state.kmは次の県境までの残りkmなので使わない）
-  const prefDistMap = buildPrefDistMap();
   const curPrefInfo = prefDistMap[state.pref];
   if (!curPrefInfo) return { unlocked: [], locked: entries };
   const totalDist = curPrefInfo.startCum + (curPrefInfo.dist - state.km);
@@ -920,7 +923,7 @@ function renderDiarySection(station) {
   return `<div class="diary-section">
     <div class="diary-label">📖 測量日記 <span class="diary-count">${unlocked.length}/${unlocked.length + locked.length}件</span></div>
     <div class="diary-entries">${rows}</div>
-    ${station.inopediaRoute ? `<a href="${station.inopediaRoute}" class="diary-route-link">🗺️ ルート図を見る</a>` : ''}
+    ${station.inopediaRoute ? `<a href="${station.inopediaRoute}" class="diary-route-link">📜 伊能ルートを見る</a>` : ''}
   </div>`;
 }
 
