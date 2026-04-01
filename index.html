@@ -886,7 +886,6 @@ function getDiaryEntries(station) {
   }
 
   // inland/shitai: この宿場の県境を越えたら全解放
-  const stationPrefInfo = prefDistMap[station.pref];
   const prefBorderCumDist = stationPrefInfo ? stationPrefInfo.endCum : stationCumDist;
   const crossedPrefBorder = totalDist >= prefBorderCumDist;
 
