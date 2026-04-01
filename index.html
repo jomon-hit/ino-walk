@@ -1034,9 +1034,10 @@ function buildPrefDistMap() {
   const map = {};
   let cumulative = 0;
   prefList.forEach(pref => {
-    const firstStation = masterData.find(d => d.pref === pref);
-    if (firstStation) {
-      const dist = firstStation.nextDist; // 県の総距離
+    const stations = masterData.filter(d => d.pref === pref);
+    if (stations.length) {
+      // その県の全宿場のnextDistの合計が県の総距離
+      const dist = stations.reduce((sum, s) => sum + s.nextDist, 0);
       map[pref] = { dist, startCum: cumulative, endCum: cumulative + dist };
       cumulative += dist;
     }
