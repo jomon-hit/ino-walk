@@ -1032,14 +1032,16 @@ function saveState() {
 // 各県の実距離と正しい累積距離を事前計算
 function buildPrefDistMap() {
   const map = {};
-  let cumulative = 0;
   prefList.forEach(pref => {
     const stations = masterData.filter(d => d.pref === pref);
     if (stations.length) {
-      // その県の全宿場のnextDistの合計が県の総距離
-      const dist = stations.reduce((sum, s) => sum + s.nextDist, 0);
-      map[pref] = { dist, startCum: cumulative, endCum: cumulative + dist };
-      cumulative += dist;
+      // 県の最初と最後の宿場のcumDistで県の開始・終了を計算
+      const first = stations.reduce((a, b) => a.cumDist < b.cumDist ? a : b);
+      const last  = stations.reduce((a, b) => a.cumDist > b.cumDist ? a : b);
+      const startCum = first.cumDist - first.nextDist;
+      const endCum   = last.cumDist;
+      const dist = endCum - startCum;
+      map[pref] = { dist, startCum, endCum };
     }
   });
   return map;
