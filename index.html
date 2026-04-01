@@ -1156,7 +1156,7 @@ function updateDashboard() {
   
   // Next pref
   document.getElementById('npCurrent').textContent = state.pref;
-  document.getElementById('npDist').textContent = `${state.km} km`;
+  document.getElementById('npDist').innerHTML = `${state.km} km <button onclick="openEditKm()" style="font-size:11px;padding:2px 8px;border:1px solid var(--border);border-radius:6px;background:var(--bg);cursor:pointer;color:var(--accent3);">✏️修正</button>`;
   document.getElementById('npSteps').textContent = `${c.nextSteps.toLocaleString()} 歩`;
   document.getElementById('npDays').textContent = c.nextDays > 0 ? `${c.nextDays} 日` : '-';
   
