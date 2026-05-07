@@ -1653,6 +1653,35 @@ function copyBookmarkUrl() {
   }
 }
 
+function restoreFromUrl() {
+  const raw = document.getElementById('restoreUrl').value.trim();
+  if (!raw) { alert('URLを貼り付けてください'); return; }
+  try {
+    const url = new URL(raw);
+    const p = url.searchParams;
+    if (!p.get('s')) { alert('バックアップURLではないようです'); return; }
+    state.start = p.get('s') || '';
+    state.pref = p.get('p') || '';
+    state.km = parseFloat(p.get('k')) || 0;
+    state.stride = parseFloat(p.get('stride')) || 0;
+    state.arrivals = {};
+    const arr = p.get('a');
+    if (arr) {
+      arr.split(',').forEach(pair => {
+        const [pref, date] = pair.split(':');
+        if (pref && date) state.arrivals[pref] = date;
+      });
+    }
+    saveState();
+    document.getElementById('inputPref').value = state.pref;
+    document.getElementById('inputKm').value = state.km;
+    updateDashboard();
+    alert('復元しました！');
+    switchTab('home');
+  } catch(e) {
+    alert('URLの形式が正しくありません');
+  }
+}  
 function resetAll() {
   if (confirm('初期設定に戻しますか？\n到着記録も消えます。')) {
     try {
