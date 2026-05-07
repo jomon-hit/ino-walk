@@ -391,20 +391,18 @@ body {
   </div>
 
 <!-- フッターボタン -->
-  <div class="intro-footer">
+  <div class="intro-footer" style="padding: 16px 24px 24px;">
     <button class="btn btn-primary" id="introNextBtn" onclick="introNext()">次へ ▶</button>
     <div id="introLastBtns" style="display:none; width:100%; flex-direction:column; gap:8px;">
       <button class="btn btn-primary" onclick="introGoStart()">今日からスタート</button>
-      <button class="btn btn-outline" onclick="introGoHistory()">既に測量中（手動登録）</button>
-      <button class="btn btn-outline" onclick="introGoRestore()">既に測量中（バックアップの復元）</button>
-      <button class="btn btn-outline" onclick="goToSlide(0)" style="font-size:12px;">もう一度説明を読む</button>
-      <button class="btn btn-outline" onclick="skipIntroForever()" style="font-size:11px;color:var(--text-sub);border-color:var(--border);">次回からスキップ</button>
+      <button class="btn btn-outline" onclick="introGoHistory()">既に測量中（手動 / 復元）</button>
+      
+      <div style="display:flex; gap:8px; margin-top:8px; justify-content:center;">
+        <span onclick="goToSlide(0)" style="font-size:12px; color:var(--accent3); text-decoration:underline; cursor:pointer;">説明をもう一度</span>
+        <span onclick="skipIntroForever()" style="font-size:12px; color:var(--text-sub); text-decoration:underline; cursor:pointer;">次回からスキップ</span>
+      </div>
     </div>
   </div>
-
-
-
-
 
 <!-- Modal: 歩数入力 -->
 <div class="modal-overlay" id="stepsModal" onclick="closeStepsModal(event)">
