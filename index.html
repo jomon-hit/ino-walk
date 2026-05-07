@@ -395,7 +395,8 @@ body {
     <button class="btn btn-primary" id="introNextBtn" onclick="introNext()">次へ ▶</button>
     <div id="introLastBtns" style="display:none;width:100%;display:none;flex-direction:column;gap:8px;">
       <button class="btn btn-primary" onclick="introGoStart()">今日からスタート</button>
-      <button class="btn btn-outline" onclick="introGoHistory()">既に測量中（途中から参加）</button>
+      <button class="btn btn-outline" onclick="introGoHistory()">既に測量中（手動登録）</button>
+<button class="btn btn-outline" onclick="introGoRestore()">既に測量中（バックアップURLから復元）</button>
       <button class="btn btn-outline" onclick="goToSlide(0)" style="font-size:12px;">もう一度説明を読む</button>
       <button class="btn btn-outline" onclick="skipIntroForever()" style="font-size:11px;color:var(--text-sub);border-color:var(--border);">次回からスキップ</button>
     </div>
@@ -457,7 +458,8 @@ body {
       資料：<a href="https://www.inopedia.tokyo/index.html" style="color:var(--accent3);text-decoration:underline;">InoPedia（伊能忠敬と伊能図の大事典）</a>
     </p>
     <button class="btn btn-primary" onclick="startNew()">今日からスタート</button>
-    <button class="btn btn-outline" onclick="showHistorySetup()">既に測量中（途中から参加）</button>
+    <button class="btn btn-outline" onclick="showHistorySetup()">既に測量中（手動登録）</button>
+　　<button class="btn btn-outline" onclick="showRestoreSetup()">既に測量中（バックアップURLから復元）</button>
   </div>
 </div>
 
