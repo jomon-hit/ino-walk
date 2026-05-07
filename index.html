@@ -681,6 +681,11 @@ body {
     <button class="btn btn-outline" onclick="generateAndShowBackup()" style="margin-top:8px;font-size:13px;padding:10px;">💾 バックアップを生成</button>
     <p style="font-size:11px;color:var(--text-sub);margin-top:6px;">押すとコピーモードになります。メモ帳等に貼り付けて保存できます。基本的にはブラウザに自動保存されます。</p>
     <button class="btn btn-outline" id="copyBackupBtn" onclick="copyBookmarkUrl()" style="margin-top:4px;font-size:13px;padding:10px;display:none;">📋 URLをコピー</button>
+    <div style="margin-top:16px;padding-top:12px;border-top:1px solid var(--border);">
+      <div class="input-label">📥 バックアップURLから復元</div>
+      <textarea id="restoreUrl" style="width:100%;height:60px;font-size:11px;border:1px solid var(--border);border-radius:6px;padding:8px;resize:none;" placeholder="バックアップURLをここに貼り付け"></textarea>
+      <button class="btn btn-outline" onclick="restoreFromUrl()" style="margin-top:8px;font-size:13px;padding:10px;">📥 このURLから復元</button>
+    </div>
   </div>
   <button class="btn btn-outline" onclick="shareApp()" style="margin-top:4px;">👋 友達に紹介する</button>
   <button class="btn btn-outline" onclick="showIntroAgain()" style="margin-top:4px;">📖 アプリの説明をもう一度見る</button>
