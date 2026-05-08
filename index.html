@@ -265,7 +265,7 @@ body {
 }
 #introOverlay.hidden { display: none; }
 .intro-slides {
-  flex: 1; display: flex; overflow: hidden; position: relative;
+  flex: 1; display: flex; overflow-y: auto; position: relative;
 }
 .intro-track {
   display: flex; width: 100%;
@@ -390,15 +390,16 @@ body {
     <div class="intro-dot" onclick="goToSlide(4)"></div>
   </div>
 
-  <!-- フッターボタン -->
-  <div class="intro-footer">
-    <button class="btn btn-primary" id="introNextBtn" onclick="introNext()">次へ ▶</button>
-    <div id="introLastBtns" style="display:none;width:100%;display:none;flex-direction:column;gap:8px;">
-      <button class="btn btn-primary" onclick="introGoStart()">今日からスタート</button>
-     <button class="btn btn-outline" onclick="introGoHistory()">既に測量中（手動登録）</button>
-<button class="btn btn-outline" onclick="introGoRestore()">既に測量中（バックアップURLから復元）</button>
-      <button class="btn btn-outline" onclick="goToSlide(0)" style="font-size:12px;">もう一度説明を読む</button>
-      <button class="btn btn-outline" onclick="skipIntroForever()" style="font-size:11px;color:var(--text-sub);border-color:var(--border);">次回からスキップ</button>
+<!-- フッターボタン -->
+<div class="intro-footer">
+  <button class="btn btn-primary" id="introNextBtn" onclick="introNext()">次へ ▶</button>
+  <div id="introLastBtns" style="display:none;width:100%;display:none;flex-direction:column;gap:8px;">
+    <button class="btn btn-primary" onclick="introGoStart()">今日からスタート</button>
+    <button class="btn btn-outline" onclick="introGoHistory()">既に測量中（手動）</button>
+    <button class="btn btn-outline" onclick="introGoRestore()">バックアップURLから復元</button>
+    <div style="display:flex;gap:16px;justify-content:center;margin-top:4px;">
+      <span onclick="goToSlide(0)" style="font-size:12px;color:var(--text-sub);cursor:pointer;text-decoration:underline;">もう一度説明を読む</span>
+      <span onclick="skipIntroForever()" style="font-size:11px;color:var(--text-sub);cursor:pointer;text-decoration:underline;">次回からスキップ</span>
     </div>
   </div>
 </div>
@@ -457,9 +458,8 @@ body {
     <p style="font-size:11px;color:var(--text-sub);margin:12px 0 24px;line-height:1.6;">
       資料：<a href="https://www.inopedia.tokyo/index.html" style="color:var(--accent3);text-decoration:underline;">InoPedia（伊能忠敬と伊能図の大事典）</a>
     </p>
-    <button class="btn btn-primary" onclick="startNew()">今日からスタート</button>
-    <button class="btn btn-outline" onclick="showHistorySetup()">既に測量中（手動登録）</button>
-<button class="btn btn-outline" onclick="showRestoreSetup()">既に測量中（バックアップURLから復元）</button>
+<button class="btn btn-outline" onclick="showHistorySetup()">既に測量中（手動）</button>
+    <button class="btn btn-outline" onclick="showRestoreSetup()">バックアップURLから復元</button>
   </div>
 </div>
 
