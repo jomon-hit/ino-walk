@@ -1693,11 +1693,11 @@ function showRestoreSetup() {
       });
     }
     saveState();
-    document.getElementById('inputPref').value = state.pref;
-    document.getElementById('inputKm').value = state.km;
-    updateDashboard();
+// ✅ enterApp() がタブバー表示もやってくれる
+    const box = document.getElementById('restoreBox');
+    if (box) box.remove();
     alert('復元しました！');
-    switchTab('home');
+    enterApp();
   } catch(e) {
     alert('URLの形式が正しくありません');
   }
