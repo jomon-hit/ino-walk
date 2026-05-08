@@ -1649,6 +1649,59 @@ function copyBookmarkUrl() {
     alert('コピーしました！');
   }
 }
+function introGoRestore() {
+  document.getElementById('introOverlay').classList.add('hidden');
+  showRestoreSetup();
+}
+
+function showRestoreSetup() {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('pageWelcome').classList.add('active');
+  // 復元UIを表示
+  let el = document.getElementById('restoreBox');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'restoreBox';
+    el.className = 'card';
+    el.innerHTML = `
+      <div class="card-title"><span class="icon">📥</span> バックアップURLから復元</div>
+      <p style="font-size:12px;color:var(--text-sub);margin-bottom:8px;">以前の端末で生成したバックアップURLを貼り付けてください。</p>
+      <textarea id="restoreUrl" style="width:100%;height:80px;font-size:11px;border:1px solid var(--border);border-radius:6px;padding:8px;resize:none;" placeholder="バックアップURLをここに貼り付け"></textarea>
+      <button class="btn btn-primary" onclick="restoreFromUrl()" style="margin-top:8px;">📥 復元してスタート</button>
+      <button class="btn btn-outline" onclick="document.getElementById('restoreBox').remove();" style="margin-top:4px;font-size:12px;">戻る</button>
+    `;
+    document.getElementById('pageWelcome').appendChild(el);
+  }
+}
+ function restoreFromUrl() {
+  const raw = document.getElementById('restoreUrl').value.trim();
+  if (!raw) { alert('URLを貼り付けてください'); return; }
+  try {
+    const url = new URL(raw);
+    const p = url.searchParams;
+    if (!p.get('s')) { alert('バックアップURLではないようです'); return; }
+    state.start = p.get('s') || '';
+    state.pref = p.get('p') || '';
+    state.km = parseFloat(p.get('k')) || 0;
+    state.stride = parseFloat(p.get('stride')) || 0;
+    state.arrivals = {};
+    const arr = p.get('a');
+    if (arr) {
+      arr.split(',').forEach(pair => {
+        const [pref, date] = pair.split(':');
+        if (pref && date) state.arrivals[pref] = date;
+      });
+    }
+    saveState();
+    document.getElementById('inputPref').value = state.pref;
+    document.getElementById('inputKm').value = state.km;
+    updateDashboard();
+    alert('復元しました！');
+    switchTab('home');
+  } catch(e) {
+    alert('URLの形式が正しくありません');
+  }
+}
 
 function resetAll() {
   if (confirm('初期設定に戻しますか？\n到着記録も消えます。')) {
