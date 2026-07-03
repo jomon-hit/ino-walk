@@ -859,11 +859,11 @@ function getDiaryEntries(station) {
   const stationPrefInfo = prefDistMap[station.pref];
   const prefNo = stationPrefInfo ? prefList.indexOf(station.pref) + 1 : null;
   const entries = (prefNo ? diaryByRoute[prefNo] : null) || [];
-  if (!entries.length) return { unlocked: [], locked: [] };
+  if (!entries.length) return { unlocked: [], locked: [], hasLockedInland: false };
 
   // totalDistを正確に計算（state.kmは次の県境までの残りkmなので使わない）
   const curPrefInfo = prefDistMap[state.pref];
-  if (!curPrefInfo) return { unlocked: [], locked: entries };
+  if (!curPrefInfo) return { unlocked: [], locked: entries, hasLockedInland: entries.some(e => e.entry_type !== 'coast') };
   const totalDist = curPrefInfo.startCum + (curPrefInfo.dist - state.km);
 
   // この宿場の位置（cumDist）と、前の宿場の位置
@@ -873,7 +873,7 @@ function getDiaryEntries(station) {
   const isArrived = totalDist >= arrivedCumDist;
   const isPassed  = totalDist >= stationCumDist;
 
-  if (!isArrived) return { unlocked: [], locked: entries };
+  if (!isArrived) return { unlocked: [], locked: entries, hasLockedInland: entries.some(e => e.entry_type !== 'coast') };
 
   const coast    = entries.filter(e => e.entry_type === 'coast');
   const nonCoast = entries.filter(e => e.entry_type !== 'coast');
@@ -899,11 +899,12 @@ function getDiaryEntries(station) {
   return {
     unlocked: [...unlockedCoast, ...unlockedNonCoast],
     locked:   [...lockedCoast,   ...lockedNonCoast],
+    hasLockedInland: lockedNonCoast.length > 0,
   };
 }
 
 function renderDiarySection(station) {
-  const { unlocked, locked } = getDiaryEntries(station);
+  const { unlocked, locked, hasLockedInland } = getDiaryEntries(station);
   if (!unlocked.length && !locked.length) return '';
 
   const entryHtml = (e, isLocked) => {
@@ -926,6 +927,7 @@ function renderDiarySection(station) {
   return `<div class="diary-section">
     <div class="diary-label">📖 測量日記 <span class="diary-count">${unlocked.length}/${unlocked.length + locked.length}件</span></div>
     <div class="diary-entries">${rows}</div>
+    ${hasLockedInland ? '<p style="font-size:11px;color:var(--accent3);margin-top:8px;">🔒 内陸部・支隊の日記は県境を越えると解禁されます</p>' : ''}
     ${station.inopediaRoute ? `<a href="${station.inopediaRoute}" class="diary-route-link">📜 伊能ルートを見る</a>` : ''}
   </div>`;
 }
@@ -1693,11 +1695,11 @@ function showRestoreSetup() {
       });
     }
     saveState();
-    document.getElementById('inputPref').value = state.pref;
-    document.getElementById('inputKm').value = state.km;
-    updateDashboard();
+// ✅ enterApp() がタブバー表示もやってくれる
+    const box = document.getElementById('restoreBox');
+    if (box) box.remove();
     alert('復元しました！');
-    switchTab('home');
+    enterApp();
   } catch(e) {
     alert('URLの形式が正しくありません');
   }
