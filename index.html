@@ -138,6 +138,12 @@ body {
 .station-card:active { transform: scale(0.98); }
 .station-card.passed { border-left-color: var(--passed); }
 .station-card.current { border-left-color: var(--current); background: #fff8f0; }
+.station-card.jump-highlight { animation: jumpHighlight 1.4s ease; }
+@keyframes jumpHighlight {
+  0%   { box-shadow: 0 0 0 3px var(--accent3); }
+  70%  { box-shadow: 0 0 0 3px var(--accent3); }
+  100% { box-shadow: 0 1px 4px var(--shadow); }
+}
 .station-name { font-size:16px; font-weight:700; }
 .station-place { font-size:12px; color:var(--text-sub); }
 .station-dist { font-size:11px; color:var(--text-sub); margin-top:4px; }
@@ -617,8 +623,8 @@ body {
   </div>
 
   <!-- Current station -->
-  <div class="card" id="currentStationCard" style="display:none;">
-    <div class="card-title"><span class="icon">📍</span> 直前の宿場</div>
+  <div class="card" id="currentStationCard" style="display:none;cursor:pointer;" onclick="goToCurrentStation()">
+    <div class="card-title"><span class="icon">📍</span> 直前の宿場 <span style="margin-left:auto;font-size:11px;color:var(--text-sub);font-weight:400;">宿場タブで見る ›</span></div>
     <div id="currentStationContent"></div>
   </div>
 </div>
@@ -1337,7 +1343,7 @@ function renderStationsList() {
     
     if (passed || isCurrent) {
       const cls = isCurrent ? 'current' : 'passed';
-      html += `<div class="station-card ${cls}" onclick='showStationDetail(masterData[${s.id-1}])'>
+      html += `<div class="station-card ${cls}" id="station-card-${s.id}" onclick='showStationDetail(masterData[${s.id-1}])'>
         <div class="station-name">${s.station}</div>
         <div class="station-place">${s.pref}　${s.place}</div>
         <div class="station-dist">累積 ${sCumDist.toFixed(1)} km</div>
@@ -1352,6 +1358,23 @@ function renderStationsList() {
     }
   });
   container.innerHTML = html;
+}
+
+// ホーム画面の「直前の宿場」タップ → 宿場タブの該当カードへジャンプ
+function goToCurrentStation() {
+  const c = calcProgress();
+  if (!c.currentStation) return;
+  const targetId = c.currentStation.id;
+
+  switchTab('stations');
+
+  setTimeout(() => {
+    const el = document.getElementById('station-card-' + targetId);
+    if (!el) return;
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    el.classList.add('jump-highlight');
+    setTimeout(() => el.classList.remove('jump-highlight'), 1500);
+  }, 150);
 }
 
 // ============================================================
