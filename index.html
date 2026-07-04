@@ -314,6 +314,109 @@ body {
   padding: 8px 24px 36px;
   display: flex; flex-direction: column; gap: 10px;
 }
+
+/* Arrival popup (県境突入ポップイン・音なし) */
+.arrival-popup-overlay {
+  display:none; position:fixed; inset:0; z-index:3500;
+  align-items:center; justify-content:center; pointer-events:none;
+}
+.arrival-popup-overlay.show { display:flex; }
+.arrival-popup-card {
+  display:flex; flex-direction:column; align-items:center; gap:10px;
+  animation: arrivalPop 2.4s ease forwards;
+}
+@keyframes arrivalPop {
+  0%   { opacity:0; transform:scale(0.8); }
+  12%  { opacity:1; transform:scale(1.04); }
+  20%  { transform:scale(1); }
+  78%  { opacity:1; transform:scale(1); }
+  100% { opacity:0; transform:scale(1.02); }
+}
+.arrival-popup-img {
+  width:200px; max-width:60vw; border-radius:14px;
+  box-shadow: 0 8px 28px rgba(0,0,0,0.35);
+}
+.arrival-popup-textfallback {
+  width:160px; height:200px; border-radius:14px;
+  background: linear-gradient(135deg, #fff3e0, #fce4c8);
+  display:flex; align-items:center; justify-content:center;
+  font-size:56px; box-shadow: 0 8px 28px rgba(0,0,0,0.25);
+}
+.arrival-popup-label {
+  background: rgba(0,0,0,0.6); color:#fff; font-weight:700;
+  font-size:15px; padding:6px 16px; border-radius:20px;
+}
+.confetti-piece {
+  position:absolute; bottom:-12px; width:8px; height:14px; border-radius:2px;
+  animation-name: confettiBurst; animation-timing-function: ease-out; animation-fill-mode: forwards;
+  z-index:1;
+}
+@keyframes confettiBurst {
+  0%   { transform: translate(0,0) rotate(0deg); opacity:1; }
+  70%  { opacity:1; }
+  100% { transform: translate(var(--drift,0), -78vh) rotate(720deg); opacity:0; }
+}
+
+/* Gallery (到着ギャラリー) */
+.gallery-overlay {
+  display:none; position:fixed; inset:0; z-index:2600;
+  background: var(--bg); flex-direction:column;
+}
+.gallery-overlay.show { display:flex; }
+.gallery-header {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:16px; padding-top:calc(16px + env(safe-area-inset-top));
+  font-size:16px; font-weight:700; border-bottom:1px solid var(--border);
+  background: var(--bg-card);
+}
+.gallery-grid {
+  display:grid; grid-template-columns:repeat(3,1fr); gap:8px;
+  padding:12px; overflow-y:auto;
+}
+.gallery-item {
+  position:relative; aspect-ratio:3/4; border-radius:8px;
+  overflow:hidden; background:#ddd4c4; cursor:pointer;
+}
+.gallery-item img { width:100%; height:100%; object-fit:cover; display:block; }
+.gallery-item.locked { filter:grayscale(1) brightness(0.55); cursor:default; }
+.gallery-item .lock-icon {
+  position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+  font-size:22px; color:#fff;
+}
+.gallery-item-label {
+  position:absolute; left:0; right:0; bottom:0;
+  background: linear-gradient(transparent, rgba(0,0,0,0.65));
+  color:#fff; font-size:11px; font-weight:700; text-align:center;
+  padding:10px 2px 4px;
+}
+.gallery-item.img-missing { background: linear-gradient(135deg, #fff3e0, #fce4c8); }
+
+.gallery-lightbox-overlay {
+  display:none; position:fixed; inset:0; z-index:2700;
+  background:rgba(0,0,0,0.75); align-items:center; justify-content:center;
+}
+.gallery-lightbox-overlay.show { display:flex; }
+.gallery-lightbox-content {
+  position:relative; display:flex; flex-direction:column; align-items:center; gap:12px;
+  padding:20px; max-width:90vw;
+}
+.gallery-lightbox-content .modal-close { position:absolute; top:-6px; right:0; color:#fff; }
+.gallery-lightbox-img {
+  width:260px; max-width:80vw; border-radius:14px;
+  box-shadow: 0 8px 28px rgba(0,0,0,0.4);
+}
+.gallery-lightbox-textfallback {
+  width:220px; height:280px; border-radius:14px;
+  background: linear-gradient(135deg, #fff3e0, #fce4c8);
+  display:flex; align-items:center; justify-content:center; flex-direction:column; gap:8px;
+  font-size:40px; color:var(--text);
+}
+.gallery-lightbox-name { color:#fff; font-size:16px; font-weight:700; }
+.gallery-lightbox-audio-btn {
+  font-size:26px; cursor:pointer; background:rgba(255,255,255,0.15);
+  width:52px; height:52px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+}
 </style>
 </head>
 <body>
@@ -454,6 +557,21 @@ body {
 <!-- Modal for station detail -->
 <div class="modal-overlay" id="stationModal" onclick="closeModal(event)">
   <div class="modal-content" id="modalContent"></div>
+</div>
+
+<!-- 県境突入ポップイン（音なし） -->
+<div class="arrival-popup-overlay" id="arrivalPopup"></div>
+
+<!-- 到着ギャラリー -->
+<div class="gallery-overlay" id="galleryOverlay">
+  <div class="gallery-header">
+    <span>🎊 到着ギャラリー</span>
+    <span class="modal-close" onclick="closeGallery()">✕</span>
+  </div>
+  <div class="gallery-grid" id="galleryGrid"></div>
+</div>
+<div class="gallery-lightbox-overlay" id="galleryLightbox" onclick="closeLightbox(event)">
+  <div class="gallery-lightbox-content" id="galleryLightboxContent"></div>
 </div>
 
 <!-- Page: Welcome -->
@@ -627,6 +745,11 @@ body {
   <!-- Current station link -->
   <div class="card current-station-link" id="currentStationCard" style="display:none;" onclick="goToCurrentStation()">
     <div class="card-title" style="margin-bottom:0;"><span class="icon">📍</span> 直前の宿場を見る <span style="margin-left:auto;font-size:16px;">›</span></div>
+  </div>
+
+  <!-- Arrival gallery link -->
+  <div class="card current-station-link" onclick="openGallery()">
+    <div class="card-title" style="margin-bottom:0;"><span class="icon">🎊</span> 到着ギャラリー <span style="margin-left:auto;font-size:16px;">›</span></div>
   </div>
 </div>
 
@@ -1444,6 +1567,7 @@ function startNew() {
   state.pref = prefList[0];
   state.km = masterData[0].nextDist;
   state.arrivals = { '東京': state.start };
+  showArrivalPopup(prefList[0]);
   
   // 歩幅設定ページへ
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -1942,6 +2066,7 @@ function applySteps() {
         state.km = Math.max(0, nextPrefStation.nextDist - overflow);
         document.getElementById('inputPref').value = nextPref;
         document.getElementById('inputKm').value = state.km.toFixed(2);
+        showArrivalPopup(nextPref);
       }
     }
   } else {
@@ -1980,6 +2105,170 @@ function applyEditKm() {
   saveState();
   updateDashboard();
   document.getElementById('editKmModal').classList.remove('show');
+}
+
+// ============================================================
+// 到着演出・ギャラリー（画像＋BGM）
+// ============================================================
+
+// 都道府県名 → ファイル番号（prefListの並び順＝スプレッドシートの行順から自動採番）
+// images/arrival/{番号}.jpg / sounds/{番号}.mp3 で参照する（例: 01=東京, 02=千葉...）
+// 手打ちの対応表だと入力ミスの元になるので、prefListの位置から自動で決める
+const DEFAULT_ARRIVAL_IMAGE = 'images/arrival/default.jpg'; // 専用画像が無い県のフォールバック
+function getPrefNumber(prefRaw) {
+  const idx = prefList.indexOf(prefRaw);
+  if (idx < 0) return null;
+  return String(idx + 1).padStart(2, '0');
+}
+
+// 県別BGMの曲数（曲を追加したらここの数字を増やすだけでOK）
+// 例: 02.mp3, 02-2.mp3, 02-3.mp3 の3曲（千葉=02番）なら '02':3
+const PREF_BGM_COUNT = {
+  '02': 3, // 千葉
+  '03': 2  // 茨城
+};
+
+function prefDisplayName(prefRaw) {
+  return (prefRaw || '').replace(/[12]$/, '');
+}
+
+function getArrivalImageUrl(prefRaw) {
+  const num = getPrefNumber(prefRaw);
+  return num ? `images/arrival/${num}.jpg` : null;
+}
+
+function getArrivalBgmUrl(prefRaw) {
+  if (prefRaw === '東京') return 'sounds/Start.mp3'; // 東京は出発専用BGM
+  const num = getPrefNumber(prefRaw);
+  const count = num ? (PREF_BGM_COUNT[num] || 0) : 0;
+  if (count > 0) {
+    const n = Math.floor(Math.random() * count) + 1;
+    return n === 1 ? `sounds/${num}.mp3` : `sounds/${num}-${n}.mp3`;
+  }
+  return 'sounds/mainTheme.mp3'; // 専用曲が無い県はデフォルトBGM
+}
+
+// 一度表示したらもう出さないためのフラグ（localStorage・端末ごと）
+function getShownArrivals() {
+  try { return JSON.parse(localStorage.getItem('inowalk_shownArrivals') || '{}'); }
+  catch (e) { return {}; }
+}
+function markArrivalShown(prefRaw) {
+  const shown = getShownArrivals();
+  shown[prefRaw] = true;
+  localStorage.setItem('inowalk_shownArrivals', JSON.stringify(shown));
+}
+
+// 県境突入時のポップイン演出（音は鳴らさない・タップ不要で自動フェード）
+function showArrivalPopup(prefRaw) {
+  if (!prefRaw) return;
+  const shown = getShownArrivals();
+  if (shown[prefRaw]) return;
+  markArrivalShown(prefRaw);
+
+  const overlay = document.getElementById('arrivalPopup');
+  if (!overlay) return;
+  const imgUrl = getArrivalImageUrl(prefRaw);
+  const label = prefRaw === '東京' ? '🎌 出発！' : `🎉 ${prefDisplayName(prefRaw)} 到着！`;
+
+  overlay.innerHTML = `
+    <div class="arrival-popup-card">
+      ${imgUrl ? `<img src="${imgUrl}" class="arrival-popup-img" onerror="if(!this.dataset.fb){this.dataset.fb='1'; this.src='${DEFAULT_ARRIVAL_IMAGE}';} else {this.style.display='none'; this.nextElementSibling.style.display='flex';}">` : ''}
+      <div class="arrival-popup-textfallback" style="display:${imgUrl ? 'none' : 'flex'};">🎉</div>
+      <div class="arrival-popup-label">${label}</div>
+    </div>
+  `;
+  spawnConfetti(overlay);
+  overlay.classList.add('show');
+  setTimeout(() => { overlay.classList.remove('show'); overlay.innerHTML = ''; }, 2500);
+}
+
+// 紙吹雪（初回到着ポップインのみで使用。ギャラリーでは出さない）
+function spawnConfetti(container) {
+  const colors = ['#c45c3c', '#2e7d5b', '#3a6ea5', '#e8b64c', '#ffffff'];
+  let html = '';
+  const count = 36;
+  for (let i = 0; i < count; i++) {
+    const left = (Math.random() * 100).toFixed(1);
+    const color = colors[Math.floor(Math.random() * colors.length)];
+    const delay = (Math.random() * 0.3).toFixed(2);
+    const duration = (1.3 + Math.random() * 0.7).toFixed(2);
+    const rotate = Math.floor(Math.random() * 360);
+    const drift = Math.floor((Math.random() - 0.5) * 140);
+    html += `<div class="confetti-piece" style="left:${left}%; background:${color}; animation-delay:${delay}s; animation-duration:${duration}s; --drift:${drift}px; transform:rotate(${rotate}deg);"></div>`;
+  }
+  container.insertAdjacentHTML('beforeend', html);
+}
+
+// ---- ギャラリー ----
+let galleryAudio = null;
+
+function openGallery() {
+  renderGallery();
+  document.getElementById('galleryOverlay').classList.add('show');
+}
+function closeGallery() {
+  document.getElementById('galleryOverlay').classList.remove('show');
+}
+
+function renderGallery() {
+  const grid = document.getElementById('galleryGrid');
+  if (!grid) return;
+  grid.innerHTML = prefList.map(p => {
+    const arrived = !!state.arrivals[p] || p === state.pref || (p === '東京' && !!state.start);
+    const name = prefDisplayName(p);
+    const imgUrl = getArrivalImageUrl(p);
+    if (arrived) {
+      return `
+        <div class="gallery-item" onclick="openLightbox('${p}')">
+          ${imgUrl ? `<img src="${imgUrl}" onerror="if(!this.dataset.fb){this.dataset.fb='1'; this.src='${DEFAULT_ARRIVAL_IMAGE}';} else {this.remove(); this.parentElement.classList.add('img-missing');}">` : ''}
+          <div class="gallery-item-label">${name}</div>
+        </div>`;
+    }
+    return `
+      <div class="gallery-item locked">
+        <div class="lock-icon">🔒</div>
+        <div class="gallery-item-label">${name}</div>
+      </div>`;
+  }).join('');
+}
+
+function stopGalleryAudio() {
+  if (galleryAudio) { galleryAudio.pause(); galleryAudio = null; }
+}
+
+function openLightbox(prefRaw) {
+  const imgUrl = getArrivalImageUrl(prefRaw);
+  const name = prefDisplayName(prefRaw);
+  const content = document.getElementById('galleryLightboxContent');
+  content.innerHTML = `
+    <div class="modal-close" onclick="closeLightbox()">✕</div>
+    ${imgUrl ? `<img src="${imgUrl}" class="gallery-lightbox-img" onerror="if(!this.dataset.fb){this.dataset.fb='1'; this.src='${DEFAULT_ARRIVAL_IMAGE}';} else {this.style.display='none'; this.nextElementSibling.style.display='flex';}">` : ''}
+    <div class="gallery-lightbox-textfallback" style="display:${imgUrl ? 'none' : 'flex'};">🎉<span>${name}</span></div>
+    <div class="gallery-lightbox-name">${name}</div>
+    <div class="gallery-lightbox-audio-btn" id="lightboxAudioBtn" onclick="toggleGalleryAudio()">🔇</div>
+  `;
+  document.getElementById('galleryLightbox').classList.add('show');
+
+  // デフォルトはミュートで自動再生（ミュートならブラウザの自動再生制限に引っかからない）
+  stopGalleryAudio();
+  galleryAudio = new Audio(getArrivalBgmUrl(prefRaw));
+  galleryAudio.loop = true;
+  galleryAudio.muted = true;
+  galleryAudio.play().catch(() => {});
+}
+
+function toggleGalleryAudio() {
+  if (!galleryAudio) return;
+  galleryAudio.muted = !galleryAudio.muted;
+  const btn = document.getElementById('lightboxAudioBtn');
+  if (btn) btn.textContent = galleryAudio.muted ? '🔇' : '🔊';
+}
+
+function closeLightbox(e) {
+  if (e && e.target !== document.getElementById('galleryLightbox')) return;
+  document.getElementById('galleryLightbox').classList.remove('show');
+  stopGalleryAudio();
 }
 
 showIntroIfNeeded();
