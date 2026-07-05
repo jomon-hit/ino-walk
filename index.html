@@ -108,9 +108,21 @@ body {
   max-width:100%; max-height:85vh; border-radius:10px;
   box-shadow: 0 8px 28px rgba(0,0,0,0.4); display:block;
 }
+.tools-poster-fallback {
+  background:#fff; color:#333; padding:24px; border-radius:12px;
+  font-size:14px; line-height:1.8; text-align:center; max-width:280px;
+}
 
 /* Progress */
 .progress-section { text-align:center; }
+.home-guide-row { display:flex; gap:8px; }
+.home-guide-btn {
+  flex:1; text-align:center; font-size:12px; font-weight:700;
+  color: var(--text); background: var(--bg); border:1px solid var(--border);
+  padding:10px 8px; border-radius:10px; text-decoration:none;
+}
+.progress-pct-row { display:flex; align-items:center; justify-content:center; gap:6px; }
+.progress-info-icon { font-size:16px; color: var(--text-sub); cursor:pointer; }
 .progress-pct { font-size:42px; font-weight:900; color:var(--accent); }
 .progress-pct span { font-size:18px; }
 .progress-bar-wrap {
@@ -606,6 +618,18 @@ body {
   <div class="modal-content" id="modalContent"></div>
 </div>
 
+<!-- 進捗の計算についての説明 -->
+<div class="modal-overlay" id="progressInfoModal" onclick="closeProgressInfo(event)">
+  <div class="modal-content" style="max-width:320px;">
+    <div class="modal-close" onclick="closeProgressInfo()">✕</div>
+    <div style="font-weight:700;margin-bottom:10px;">📊 進捗の計算について</div>
+    <div style="font-size:13px;line-height:1.8;color:var(--text-sub);">
+      この進捗（%）は、伊能忠敬の測量ルート総距離（約19,044km）に対して、入力した歩数×歩幅から算出しています。<br><br>
+      お使いの万歩計アプリが表示する距離は計算ロジックが異なるため、数字がぴったり一致しないことがあります。ズレていても故障ではないので安心してください。
+    </div>
+  </div>
+</div>
+
 <!-- 県境突入ポップイン（音なし） -->
 <div class="arrival-popup-overlay" id="arrivalPopup"></div>
 
@@ -633,7 +657,8 @@ body {
 <div class="tools-poster-overlay" id="toolsPosterOverlay" onclick="closeToolsPoster(event)">
   <div class="tools-poster-content">
     <div class="modal-close" onclick="closeToolsPoster()">✕</div>
-    <img src="images/tools_poster.jpg" class="tools-poster-img">
+    <img src="images/tools_poster.jpg" class="tools-poster-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+    <div class="tools-poster-fallback" style="display:none;">📄 画像がまだアップロードされてないみたい。<br>GitHubの images/tools_poster.jpg を確認してな。</div>
   </div>
 </div>
 
@@ -649,6 +674,10 @@ body {
     <button class="btn btn-primary" onclick="startNew()">今日からスタート</button>
     <button class="btn btn-outline" onclick="showHistorySetup()">既に測量中（手動登録）</button>
 <button class="btn btn-outline" onclick="showRestoreSetup()">既に測量中（バックアップURLから復元）</button>
+    <div class="home-guide-row">
+      <a href="guide_iphone.pdf" target="_blank" class="home-guide-btn">📱 iPhoneでの追加方法</a>
+      <a href="guide_android.pdf" target="_blank" class="home-guide-btn">🤖 Androidでの追加方法</a>
+    </div>
   </div>
 </div>
 
@@ -728,7 +757,10 @@ body {
   <div class="card">
     <div class="card-title"><span class="icon">📊</span> 進捗</div>
     <div class="progress-section">
-      <div class="progress-pct" id="progressPct">0<span>%</span></div>
+      <div class="progress-pct-row">
+        <div class="progress-pct" id="progressPct">0<span>%</span></div>
+        <span class="progress-info-icon" onclick="openProgressInfo()">ⓘ</span>
+      </div>
       <div class="progress-bar-wrap"><div class="progress-bar" id="progressBar"></div></div>
       <div class="progress-label">残り <span id="remainDist">0</span> km</div>
     </div>
@@ -848,6 +880,16 @@ body {
 <div class="page" id="pageSettings">
   <div class="app-header">
     <div class="app-title serif">設定</div>
+  </div>
+  <div class="card">
+    <div class="card-title"><span class="icon">📱</span> ホーム画面に追加</div>
+    <p style="font-size:12px;color:var(--text-sub);margin-bottom:10px;">
+      ホーム画面にアイコンを置くと、アプリのように起動できます。
+    </p>
+    <div class="home-guide-row">
+      <a href="guide_iphone.pdf" target="_blank" class="home-guide-btn">📱 iPhoneでの追加方法</a>
+      <a href="guide_android.pdf" target="_blank" class="home-guide-btn">🤖 Androidでの追加方法</a>
+    </div>
   </div>
   <div class="card">
     <div class="card-title"><span class="icon">📅</span> 開始日</div>
@@ -2547,6 +2589,15 @@ function openToolsPoster() {
 function closeToolsPoster(e) {
   if (e && e.target !== document.getElementById('toolsPosterOverlay')) return;
   document.getElementById('toolsPosterOverlay').classList.remove('show');
+}
+
+function openProgressInfo() {
+  document.getElementById('progressInfoModal').classList.add('show');
+}
+function closeProgressInfo(e) {
+  if (!e || e.target === document.getElementById('progressInfoModal')) {
+    document.getElementById('progressInfoModal').classList.remove('show');
+  }
 }
 
 renderTrivia();
