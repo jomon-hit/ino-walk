@@ -86,6 +86,28 @@ body {
 .card-title .icon { font-size:16px; }
 .current-station-link { cursor:pointer; transition: transform 0.15s, background 0.15s; }
 .current-station-link:active { transform: scale(0.98); background: var(--bg); }
+.trivia-card { cursor:pointer; transition: transform 0.15s, background 0.15s; }
+.trivia-card:active { transform: scale(0.98); background: var(--bg); }
+.trivia-text { font-size:13px; line-height:1.7; color: var(--text-sub); margin-bottom:8px; }
+.trivia-footer { display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap; }
+.trivia-link { font-size:12px; font-weight:700; color: var(--accent); text-decoration:none; }
+.trivia-tools-btn {
+  font-size:12px; font-weight:700; color: var(--text);
+  background: var(--bg); border:1px solid var(--border);
+  padding:5px 12px; border-radius:14px; cursor:pointer; white-space:nowrap;
+}
+.tools-poster-overlay {
+  display:none; position:fixed; inset:0; z-index:2800;
+  background:rgba(0,0,0,0.8); align-items:center; justify-content:center;
+  padding:20px;
+}
+.tools-poster-overlay.show { display:flex; }
+.tools-poster-content { position:relative; max-width:100%; max-height:100%; }
+.tools-poster-content .modal-close { position:absolute; top:-30px; right:0; color:#fff; }
+.tools-poster-img {
+  max-width:100%; max-height:85vh; border-radius:10px;
+  box-shadow: 0 8px 28px rgba(0,0,0,0.4); display:block;
+}
 
 /* Progress */
 .progress-section { text-align:center; }
@@ -369,6 +391,15 @@ body {
   font-size:16px; font-weight:700; border-bottom:1px solid var(--border);
   background: var(--bg-card);
 }
+.gallery-playall-bar {
+  display:flex; align-items:center; gap:8px; flex-wrap:wrap;
+  padding:10px 16px; border-bottom:1px solid var(--border);
+  background: var(--bg-card);
+}
+.gallery-order-toggle { display:flex; gap:4px; }
+.now-playing-label {
+  font-size:12px; color:var(--text-sub); margin-left:auto;
+}
 .gallery-grid {
   display:grid; grid-template-columns:repeat(3,1fr); gap:8px;
   padding:12px; overflow-y:auto; flex:1; min-height:0;
@@ -414,10 +445,24 @@ body {
   font-size:40px; color:var(--text);
 }
 .gallery-lightbox-name { color:#fff; font-size:16px; font-weight:700; }
-.gallery-lightbox-audio-btn {
-  font-size:26px; cursor:pointer; background:rgba(255,255,255,0.15);
-  width:52px; height:52px; border-radius:50%;
-  display:flex; align-items:center; justify-content:center;
+.gallery-lightbox-audio-controls {
+  display:flex; gap:10px;
+}
+.gallery-audio-btn {
+  font-size:14px; font-weight:700; cursor:pointer;
+  background:rgba(255,255,255,0.15); color:#fff;
+  padding:10px 18px; border-radius:20px; border:1px solid rgba(255,255,255,0.3);
+  white-space:nowrap;
+}
+.gallery-audio-btn.active {
+  background: var(--accent); border-color: var(--accent); color:#fff;
+}
+.gallery-audio-btn.small {
+  font-size:12px; padding:6px 14px;
+  background: var(--bg); color: var(--text); border:1px solid var(--border);
+}
+.gallery-audio-btn.small.active {
+  background: var(--accent); color:#fff; border-color: var(--accent);
 }
 </style>
 </head>
@@ -570,10 +615,26 @@ body {
     <span>🎊 到着ギャラリー</span>
     <span class="modal-close" onclick="closeGallery()">✕</span>
   </div>
+  <div class="gallery-playall-bar">
+    <div class="gallery-order-toggle">
+      <span class="gallery-audio-btn small active" id="orderSeqBtn" onclick="setPlayAllOrder('sequence')">順番</span>
+      <span class="gallery-audio-btn small" id="orderRandomBtn" onclick="setPlayAllOrder('random')">ランダム</span>
+    </div>
+    <span class="gallery-audio-btn small" id="playAllBtn" onclick="togglePlayAll()">▶️ 全部再生</span>
+    <span id="nowPlayingLabel" class="now-playing-label"></span>
+  </div>
   <div class="gallery-grid" id="galleryGrid"></div>
 </div>
 <div class="gallery-lightbox-overlay" id="galleryLightbox" onclick="closeLightbox(event)">
   <div class="gallery-lightbox-content" id="galleryLightboxContent"></div>
+</div>
+
+<!-- 測量道具図鑑 -->
+<div class="tools-poster-overlay" id="toolsPosterOverlay" onclick="closeToolsPoster(event)">
+  <div class="tools-poster-content">
+    <div class="modal-close" onclick="closeToolsPoster()">✕</div>
+    <img src="images/tools_poster.jpg" class="tools-poster-img">
+  </div>
 </div>
 
 <!-- Page: Welcome -->
@@ -752,6 +813,16 @@ body {
   <!-- Arrival gallery link -->
   <div class="card current-station-link" onclick="openGallery()">
     <div class="card-title" style="margin-bottom:0;"><span class="icon">🎊</span> 到着ギャラリー <span style="margin-left:auto;font-size:16px;">›</span></div>
+  </div>
+
+  <!-- Trivia card -->
+  <div class="card trivia-card" onclick="cycleTrivia()">
+    <div class="card-title"><span class="icon">💡</span> 豆知識</div>
+    <div class="trivia-text" id="triviaText"></div>
+    <div class="trivia-footer">
+      <a class="trivia-link" id="triviaLink" href="#" target="_blank" rel="noopener" onclick="event.stopPropagation();">Wikipediaで見る →</a>
+      <span class="trivia-tools-btn" onclick="event.stopPropagation(); openToolsPoster();">🔧 測量道具図鑑</span>
+    </div>
   </div>
 </div>
 
@@ -2117,6 +2188,18 @@ function applyEditKm() {
 // images/arrival/{番号}.jpg / sounds/{番号}.mp3 で参照する（例: 01=東京, 02=千葉...）
 // 手打ちの対応表だと入力ミスの元になるので、prefListの位置から自動で決める
 const DEFAULT_ARRIVAL_IMAGE = 'images/arrival/default.jpg'; // 専用画像が無い県のフォールバック
+
+// 「今どこにいるか」を基準に解禁判定する（個別到着記録の有無に依存しない）
+// state.arrivalsは大きい歩数を一気に入力した時などに記録漏れが起きうるため、
+// ルート上の位置（現在地以前かどうか）で判定するのが実際の進捗と一致して確実
+function isPrefArrived(prefRaw) {
+  if (!state.start) return false;
+  const idx = prefList.indexOf(prefRaw);
+  const curIdx = prefList.indexOf(state.pref);
+  if (idx < 0 || curIdx < 0) return false;
+  return idx <= curIdx;
+}
+
 function getPrefNumber(prefRaw) {
   const idx = prefList.indexOf(prefRaw);
   if (idx < 0) return null;
@@ -2149,17 +2232,6 @@ function prefDisplayName(prefRaw) {
 function getArrivalImageUrl(prefRaw) {
   const num = getPrefNumber(prefRaw);
   return num ? `images/arrival/${num}.jpg` : null;
-}
-
-function getArrivalBgmUrl(prefRaw) {
-  if (prefRaw === '東京') return 'sounds/Start.mp3'; // 東京は出発専用BGM
-  const num = getPrefNumber(prefRaw);
-  const count = num ? (PREF_BGM_COUNT[num] || 0) : 0;
-  if (count > 0) {
-    const n = Math.floor(Math.random() * count) + 1;
-    return n === 1 ? `sounds/${num}.mp3` : `sounds/${num}-${n}.mp3`;
-  }
-  return 'sounds/mainTheme.mp3'; // 専用曲が無い県はデフォルトBGM
 }
 
 // 一度表示したらもう出さないためのフラグ（localStorage・端末ごと）
@@ -2216,6 +2288,18 @@ function spawnConfetti(container) {
 
 // ---- ギャラリー ----
 let galleryAudio = null;
+let lightboxPlaying = false;   // ライトボックス個別再生の状態
+let lightboxPlaylist = [];
+let lightboxTrackIndex = 0;
+
+let playAllState = {
+  active: false,
+  order: 'sequence', // 'sequence' | 'random'
+  queue: [],          // 再生する県の並び
+  trackMap: {},        // 県ごとの曲URL配列
+  round: 0,            // 今何巡目か（0=各県の1曲目、1=2曲目...）
+  posInRound: 0        // queue内の現在位置
+};
 
 function openGallery() {
   renderGallery();
@@ -2223,13 +2307,14 @@ function openGallery() {
 }
 function closeGallery() {
   document.getElementById('galleryOverlay').classList.remove('show');
+  stopPlayAll();
 }
 
 function renderGallery() {
   const grid = document.getElementById('galleryGrid');
   if (!grid) return;
   grid.innerHTML = prefList.map(p => {
-    const arrived = !!state.arrivals[p] || p === state.pref || (p === '東京' && !!state.start);
+    const arrived = isPrefArrived(p);
     const name = prefDisplayName(p);
     const imgUrl = getArrivalImageUrl(p);
     if (arrived) {
@@ -2251,6 +2336,47 @@ function stopGalleryAudio() {
   if (galleryAudio) { galleryAudio.pause(); galleryAudio = null; }
 }
 
+// そのprefで再生可能な曲URLを全部返す（東京は出発専用の1曲のみ）
+// mainThemeの曲数（増やしたらここの数字を変えるだけでOK）
+// 例: mainTheme.mp3, mainTheme-2.mp3, mainTheme-3.mp3 の3曲なら 3
+const DEFAULT_BGM_COUNT = 1;
+
+function getDefaultTrackUrls() {
+  const urls = [];
+  for (let i = 1; i <= DEFAULT_BGM_COUNT; i++) {
+    urls.push(i === 1 ? 'sounds/mainTheme.mp3' : `sounds/mainTheme-${i}.mp3`);
+  }
+  return urls;
+}
+
+function getPrefTrackUrls(prefRaw) {
+  if (prefRaw === '東京') return ['sounds/Start.mp3'];
+  const num = getPrefNumber(prefRaw);
+  const count = num ? (PREF_BGM_COUNT[num] || 0) : 0;
+  if (count > 0) {
+    const urls = [];
+    for (let i = 1; i <= count; i++) {
+      urls.push(i === 1 ? `sounds/${num}.mp3` : `sounds/${num}-${i}.mp3`);
+    }
+    return urls;
+  }
+  return getDefaultTrackUrls();
+}
+
+function getArrivedPrefs() {
+  return prefList.filter(p => isPrefArrived(p));
+}
+
+function shuffleArray(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+// ---- 個別タップ再生（複数曲あれば自動で全曲ループ） ----
 function openLightbox(prefRaw) {
   const imgUrl = getArrivalImageUrl(prefRaw);
   const name = prefDisplayName(prefRaw);
@@ -2260,31 +2386,170 @@ function openLightbox(prefRaw) {
     ${imgUrl ? `<img src="${imgUrl}" class="gallery-lightbox-img" onerror="if(!this.dataset.fb){this.dataset.fb='1'; this.src='${DEFAULT_ARRIVAL_IMAGE}';} else {this.style.display='none'; this.nextElementSibling.style.display='flex';}">` : ''}
     <div class="gallery-lightbox-textfallback" style="display:${imgUrl ? 'none' : 'flex'};">🎉<span>${name}</span></div>
     <div class="gallery-lightbox-name">${name}</div>
-    <div class="gallery-lightbox-audio-btn" id="lightboxAudioBtn" onclick="toggleGalleryAudio()">🔇</div>
+    <div class="gallery-audio-btn" id="lightboxPlayBtn" onclick="toggleLightboxAudio('${prefRaw}')">▶️ 再生</div>
   `;
   document.getElementById('galleryLightbox').classList.add('show');
+  lightboxPlaying = false;
+}
 
-  // デフォルトはミュートで自動再生（ミュートならブラウザの自動再生制限に引っかからない）
+function toggleLightboxAudio(prefRaw) {
+  if (lightboxPlaying) {
+    stopGalleryAudio();
+    lightboxPlaying = false;
+    updateLightboxBtn();
+    return;
+  }
+  stopPlayAll(); // 全体再生中なら止めて個別再生に切り替え
   stopGalleryAudio();
-  galleryAudio = new Audio(getArrivalBgmUrl(prefRaw));
-  galleryAudio.loop = true;
-  galleryAudio.muted = true;
+  lightboxPlaylist = getPrefTrackUrls(prefRaw);
+  lightboxTrackIndex = 0;
+  lightboxPlaying = true;
+  playLightboxTrack();
+  updateLightboxBtn();
+}
+
+function playLightboxTrack() {
+  galleryAudio = new Audio(lightboxPlaylist[lightboxTrackIndex]);
+  galleryAudio.addEventListener('ended', () => {
+    if (!lightboxPlaying) return;
+    lightboxTrackIndex = (lightboxTrackIndex + 1) % lightboxPlaylist.length;
+    playLightboxTrack();
+  });
   galleryAudio.play().catch(() => {});
 }
 
-function toggleGalleryAudio() {
-  if (!galleryAudio) return;
-  galleryAudio.muted = !galleryAudio.muted;
-  const btn = document.getElementById('lightboxAudioBtn');
-  if (btn) btn.textContent = galleryAudio.muted ? '🔇' : '🔊';
+function updateLightboxBtn() {
+  const btn = document.getElementById('lightboxPlayBtn');
+  if (btn) btn.textContent = lightboxPlaying ? '⏹ 停止' : '▶️ 再生';
 }
 
 function closeLightbox(e) {
   if (e && e.target !== document.getElementById('galleryLightbox')) return;
   document.getElementById('galleryLightbox').classList.remove('show');
-  stopGalleryAudio();
+  if (lightboxPlaying) {
+    stopGalleryAudio();
+    lightboxPlaying = false;
+  }
 }
 
+// ---- ギャラリー全体の自動再生（解禁済みを順番 or ランダムで流し続ける） ----
+function setPlayAllOrder(order) {
+  playAllState.order = order;
+  if (playAllState.active) startPlayAll(); // 再生中に切り替えたら即座に反映
+  updatePlayAllUI();
+}
+
+function togglePlayAll() {
+  if (playAllState.active) { stopPlayAll(); return; }
+  startPlayAll();
+}
+
+function startPlayAll() {
+  const arrived = getArrivedPrefs();
+  if (arrived.length === 0) return;
+  lightboxPlaying = false; // 個別再生とは排他
+  playAllState.queue = playAllState.order === 'random' ? shuffleArray(arrived) : arrived;
+  playAllState.trackMap = {};
+  playAllState.queue.forEach(p => { playAllState.trackMap[p] = getPrefTrackUrls(p); });
+  playAllState.round = 0;
+  playAllState.posInRound = 0;
+  playAllState.active = true;
+  updatePlayAllUI();
+  playAllAdvance();
+}
+
+// queue内を1周見渡して「このラウンドの曲を持ってる県」を探して再生。
+// 誰も持ってなければ次のラウンドへ（全ラウンド終わったら最初に戻ってループ）
+function playAllAdvance() {
+  const queue = playAllState.queue;
+  const n = queue.length;
+  for (let i = 0; i < n; i++) {
+    const prefRaw = queue[playAllState.posInRound];
+    const tracks = playAllState.trackMap[prefRaw];
+    if (playAllState.round < tracks.length) {
+      const url = tracks[playAllState.round];
+      updateNowPlayingLabel(prefRaw);
+      stopGalleryAudio();
+      galleryAudio = new Audio(url);
+      galleryAudio.addEventListener('ended', onPlayAllTrackEnded);
+      galleryAudio.play().catch(() => { onPlayAllTrackEnded(); });
+      return;
+    }
+    playAllState.posInRound = (playAllState.posInRound + 1) % n;
+  }
+  // このラウンドの曲を持ってる県が誰もいなかった → 次のラウンドへ
+  playAllState.round++;
+  const maxRound = Math.max(...queue.map(p => playAllState.trackMap[p].length));
+  if (playAllState.round >= maxRound) playAllState.round = 0; // 全ラウンド終わったら最初から
+  playAllAdvance();
+}
+
+function onPlayAllTrackEnded() {
+  if (!playAllState.active) return;
+  playAllState.posInRound = (playAllState.posInRound + 1) % playAllState.queue.length;
+  playAllAdvance();
+}
+
+function stopPlayAll() {
+  if (!playAllState.active) return;
+  playAllState.active = false;
+  stopGalleryAudio();
+  updatePlayAllUI();
+}
+
+function updatePlayAllUI() {
+  const btn = document.getElementById('playAllBtn');
+  const seqBtn = document.getElementById('orderSeqBtn');
+  const rndBtn = document.getElementById('orderRandomBtn');
+  const nowPlaying = document.getElementById('nowPlayingLabel');
+  if (btn) btn.textContent = playAllState.active ? '⏹ 停止' : '▶️ 全部再生';
+  if (seqBtn) seqBtn.classList.toggle('active', playAllState.order === 'sequence');
+  if (rndBtn) rndBtn.classList.toggle('active', playAllState.order === 'random');
+  if (!playAllState.active && nowPlaying) nowPlaying.textContent = '';
+}
+
+function updateNowPlayingLabel(prefRaw) {
+  const nowPlaying = document.getElementById('nowPlayingLabel');
+  if (nowPlaying) nowPlaying.textContent = `🎵 ${prefDisplayName(prefRaw)}`;
+}
+
+
+// ============================================================
+// 豆知識コーナー（タップで次の豆知識に切り替え、Wikipediaへリンク）
+// ============================================================
+const TRIVIA_LIST = [
+  { text: '伊能忠敬が本格的に測量の旅へ出たのは56歳から。隠居後に江戸で天文学を学び始め、17年かけて日本全国を歩いて測量した。', url: 'https://ja.wikipedia.org/wiki/伊能忠敬' },
+  { text: '伊能忠敬が使った測量器具の多くは、大坂の天文学者・間重富が改良したもの。間縄や象限儀の精度向上に貢献した。', url: 'https://ja.wikipedia.org/wiki/間重富' },
+  { text: '伊能忠敬の師匠は幕府天文方の高橋至時。19歳も年下の弟子だった忠敬の勤勉さに感激し「推歩先生」とあだ名をつけたという。', url: 'https://ja.wikipedia.org/wiki/高橋至時' },
+  { text: '17年にわたる測量の成果は、忠敬の死から3年後の1821年に「大日本沿海輿地全図」としてようやく完成した。', url: 'https://ja.wikipedia.org/wiki/大日本沿海輿地全図' },
+  { text: '象限儀は円を4分の1に分けた扇形の目盛りを持つ道具。星の高度を測ることで、観測地の緯度を割り出すのに使われた。', url: 'https://ja.wikipedia.org/wiki/象限儀' },
+  { text: '伊能忠敬の弟子の一人・間宮林蔵は、樺太が島であることを確認した人物として知られ、間宮海峡にその名を残す。', url: 'https://ja.wikipedia.org/wiki/間宮林蔵' }
+];
+let triviaIndex = Math.floor(Math.random() * TRIVIA_LIST.length);
+
+function renderTrivia() {
+  const textEl = document.getElementById('triviaText');
+  const linkEl = document.getElementById('triviaLink');
+  if (!textEl || !linkEl) return;
+  const item = TRIVIA_LIST[triviaIndex];
+  textEl.textContent = item.text;
+  linkEl.href = item.url;
+}
+
+function cycleTrivia() {
+  triviaIndex = (triviaIndex + 1) % TRIVIA_LIST.length;
+  renderTrivia();
+}
+
+function openToolsPoster() {
+  document.getElementById('toolsPosterOverlay').classList.add('show');
+}
+function closeToolsPoster(e) {
+  if (e && e.target !== document.getElementById('toolsPosterOverlay')) return;
+  document.getElementById('toolsPosterOverlay').classList.remove('show');
+}
+
+renderTrivia();
 showIntroIfNeeded();
 
 init();
