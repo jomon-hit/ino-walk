@@ -119,8 +119,25 @@ body {
 .home-guide-btn {
   flex:1; text-align:center; font-size:12px; font-weight:700;
   color: var(--text); background: var(--bg); border:1px solid var(--border);
-  padding:10px 8px; border-radius:10px; text-decoration:none;
+  padding:10px 8px; border-radius:10px; text-decoration:none; cursor:pointer;
 }
+.pdf-guide-overlay {
+  display:none; position:fixed; inset:0; z-index:2900;
+  background: var(--bg); flex-direction:column;
+}
+.pdf-guide-overlay.show { display:flex; }
+.pdf-guide-header {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:14px 16px; padding-top:calc(14px + env(safe-area-inset-top));
+  background: var(--bg-card); color: var(--text); font-weight:700; font-size:15px;
+  border-bottom:1px solid var(--border);
+}
+.pdf-guide-close {
+  font-size:13px; font-weight:700; color: var(--accent);
+  background: var(--bg); border:1px solid var(--border);
+  padding:6px 14px; border-radius:14px; cursor:pointer; white-space:nowrap;
+}
+.pdf-guide-iframe { flex:1; border:none; width:100%; background:#fff; }
 .progress-pct-row { display:flex; align-items:center; justify-content:center; gap:6px; }
 .progress-info-icon { font-size:16px; color: var(--text-sub); cursor:pointer; }
 .progress-pct { font-size:42px; font-weight:900; color:var(--accent); }
@@ -662,6 +679,15 @@ body {
   </div>
 </div>
 
+<!-- ホーム画面追加ガイド（PDF） -->
+<div class="pdf-guide-overlay" id="pdfGuideOverlay">
+  <div class="pdf-guide-header">
+    <span id="pdfGuideTitle">追加方法</span>
+    <span class="pdf-guide-close" onclick="closePdfGuide()">✕ 閉じる</span>
+  </div>
+  <iframe class="pdf-guide-iframe" id="pdfGuideIframe" src=""></iframe>
+</div>
+
 <!-- Page: Welcome -->
 <div class="page" id="pageWelcome">
   <div class="welcome">
@@ -675,8 +701,8 @@ body {
     <button class="btn btn-outline" onclick="showHistorySetup()">既に測量中（手動登録）</button>
 <button class="btn btn-outline" onclick="showRestoreSetup()">既に測量中（バックアップURLから復元）</button>
     <div class="home-guide-row">
-      <a href="guide_iphone.pdf" target="_blank" class="home-guide-btn">📱 iPhoneでの追加方法</a>
-      <a href="guide_android.pdf" target="_blank" class="home-guide-btn">🤖 Androidでの追加方法</a>
+      <span class="home-guide-btn" onclick="openPdfGuide('guide_iphone.pdf', '📱 iPhoneでの追加方法')">📱 iPhoneでの追加方法</span>
+      <span class="home-guide-btn" onclick="openPdfGuide('guide_android.pdf', '🤖 Androidでの追加方法')">🤖 Androidでの追加方法</span>
     </div>
   </div>
 </div>
@@ -887,8 +913,8 @@ body {
       ホーム画面にアイコンを置くと、アプリのように起動できます。
     </p>
     <div class="home-guide-row">
-      <a href="guide_iphone.pdf" target="_blank" class="home-guide-btn">📱 iPhoneでの追加方法</a>
-      <a href="guide_android.pdf" target="_blank" class="home-guide-btn">🤖 Androidでの追加方法</a>
+      <span class="home-guide-btn" onclick="openPdfGuide('guide_iphone.pdf', '📱 iPhoneでの追加方法')">📱 iPhoneでの追加方法</span>
+      <span class="home-guide-btn" onclick="openPdfGuide('guide_android.pdf', '🤖 Androidでの追加方法')">🤖 Androidでの追加方法</span>
     </div>
   </div>
   <div class="card">
@@ -2598,6 +2624,16 @@ function closeProgressInfo(e) {
   if (!e || e.target === document.getElementById('progressInfoModal')) {
     document.getElementById('progressInfoModal').classList.remove('show');
   }
+}
+
+function openPdfGuide(url, title) {
+  document.getElementById('pdfGuideIframe').src = url;
+  document.getElementById('pdfGuideTitle').textContent = title;
+  document.getElementById('pdfGuideOverlay').classList.add('show');
+}
+function closePdfGuide() {
+  document.getElementById('pdfGuideOverlay').classList.remove('show');
+  document.getElementById('pdfGuideIframe').src = '';
 }
 
 renderTrivia();
