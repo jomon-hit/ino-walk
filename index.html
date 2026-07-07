@@ -89,12 +89,11 @@ body {
 .trivia-card { cursor:pointer; transition: transform 0.15s, background 0.15s; }
 .trivia-card:active { transform: scale(0.98); background: var(--bg); }
 .trivia-text { font-size:13px; line-height:1.7; color: var(--text-sub); margin-bottom:8px; }
-.trivia-footer { display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap; }
-.trivia-link { font-size:12px; font-weight:700; color: var(--accent); text-decoration:none; }
+.trivia-footer { display:flex; gap:8px; flex-wrap:wrap; }
 .trivia-tools-btn {
-  font-size:12px; font-weight:700; color: var(--text);
-  background: var(--bg); border:1px solid var(--border);
-  padding:5px 12px; border-radius:14px; cursor:pointer; white-space:nowrap;
+  display:inline-block; font-size:12px; font-weight:700; color: var(--text);
+  background: var(--bg); border:1px solid var(--border); text-decoration:none;
+  padding:6px 14px; border-radius:14px; cursor:pointer; white-space:nowrap;
 }
 .tools-poster-overlay {
   display:none; position:fixed; inset:0; z-index:2800;
@@ -878,8 +877,8 @@ body {
     <div class="card-title"><span class="icon">💡</span> 豆知識</div>
     <div class="trivia-text" id="triviaText"></div>
     <div class="trivia-footer">
-      <a class="trivia-link" id="triviaLink" href="#" target="_blank" rel="noopener" onclick="event.stopPropagation();">Wikipediaで見る →</a>
-      <span class="trivia-tools-btn" onclick="event.stopPropagation(); openToolsPoster();">🔧 測量道具図鑑</span>
+      <a class="trivia-tools-btn" id="triviaLink" href="#" target="_blank" rel="noopener" onclick="event.stopPropagation();">ウィキペディア等で詳しく見る</a>
+      <span class="trivia-tools-btn" onclick="event.stopPropagation(); openToolsPoster();">🔍 測量道具の絵を見る</span>
     </div>
   </div>
 </div>
@@ -2621,6 +2620,7 @@ function renderTrivia() {
   const item = TRIVIA_LIST[triviaIndex];
   textEl.textContent = item.text;
   linkEl.href = item.url;
+  linkEl.textContent = 'ウィキペディア等で詳しく見る';
 }
 
 function cycleTrivia() {
