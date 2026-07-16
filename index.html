@@ -629,6 +629,21 @@ body {
   </div>
 </div>
 
+<!-- 到着日の編集 -->
+<div class="modal-overlay" id="editArrivalModal" onclick="closeEditArrival(event)">
+  <div class="modal-content" style="padding:24px;">
+    <div style="font-size:16px;font-weight:900;margin-bottom:16px;">✏️ <span id="editArrivalPrefName"></span>の到着日</div>
+    <div class="input-group">
+      <div class="input-label">到着日</div>
+      <input type="date" class="input-date" id="editArrivalInput">
+    </div>
+    <div style="display:flex;gap:10px;margin-top:16px;">
+      <button class="btn btn-outline" onclick="closeEditArrival()" style="flex:1;">キャンセル</button>
+      <button class="btn btn-primary" onclick="applyEditArrival()" style="flex:1;">✅ 確定</button>
+    </div>
+  </div>
+</div>
+
 <!-- Modal for station detail -->
 <div class="modal-overlay" id="stationModal" onclick="closeModal(event)">
   <div class="modal-content" id="modalContent"></div>
@@ -1847,7 +1862,7 @@ function showSettings() {
     else if (prefIdx === curIdx) dotClass = 'current';
     
     const arrDate = state.arrivals[p] ? formatDateShort(state.arrivals[p]) : '';
-    html += `<div class="log-entry">
+    html += `<div class="log-entry" onclick="openEditArrival('${p}')" style="cursor:pointer;">
       <div class="log-dot ${dotClass}"></div>
       <div class="log-pref">${p}</div>
       <div class="log-date">${arrDate || (dotClass === 'future' ? '' : '-')}</div>
@@ -2240,11 +2255,66 @@ function closeEditKm(e) {
 function applyEditKm() {
   const val = parseFloat(document.getElementById('editKmInput').value);
   if (isNaN(val) || val < 0) { alert('正しい値を入力してください'); return; }
-  state.km = val;
-  document.getElementById('inputKm').value = val.toFixed(2);
+
+  if (val <= 0) {
+    // 0になった＝その県は突破済み → 次の県へ自動移動（歩数入力時と同じ処理）
+    const currentPrefIdx = prefList.indexOf(state.pref);
+    if (currentPrefIdx >= 0 && currentPrefIdx < prefList.length - 1) {
+      const nextPref = prefList[currentPrefIdx + 1];
+      const nextPrefStation = masterData.find(d => d.pref === nextPref);
+      if (nextPrefStation) {
+        if (!state.arrivals[state.pref]) {
+          state.arrivals[state.pref] = new Date().toISOString().slice(0, 10);
+        }
+        state.pref = nextPref;
+        state.km = nextPrefStation.nextDist;
+        document.getElementById('inputPref').value = nextPref;
+        document.getElementById('inputKm').value = state.km.toFixed(2);
+        showArrivalPopup(nextPref);
+      }
+    } else {
+      state.km = 0;
+      document.getElementById('inputKm').value = '0.00';
+    }
+  } else {
+    state.km = val;
+    document.getElementById('inputKm').value = val.toFixed(2);
+  }
+
   saveState();
   updateDashboard();
   document.getElementById('editKmModal').classList.remove('show');
+}
+
+let editArrivalTargetPref = null;
+
+function openEditArrival(prefRaw) {
+  editArrivalTargetPref = prefRaw;
+  document.getElementById('editArrivalPrefName').textContent = prefDisplayName(prefRaw);
+  const existing = state.arrivals[prefRaw];
+  const input = document.getElementById('editArrivalInput');
+  if (existing && existing.length === 8) {
+    input.value = `${existing.slice(0,4)}-${existing.slice(4,6)}-${existing.slice(6,8)}`;
+  } else {
+    const today = new Date();
+    input.value = `${today.getFullYear()}-${(today.getMonth()+1).toString().padStart(2,'0')}-${today.getDate().toString().padStart(2,'0')}`;
+  }
+  document.getElementById('editArrivalModal').classList.add('show');
+}
+
+function closeEditArrival(e) {
+  if (!e || e.target === document.getElementById('editArrivalModal')) {
+    document.getElementById('editArrivalModal').classList.remove('show');
+  }
+}
+
+function applyEditArrival() {
+  const val = document.getElementById('editArrivalInput').value;
+  if (!val) { alert('日付を選んでください'); return; }
+  state.arrivals[editArrivalTargetPref] = val.replace(/-/g, '');
+  saveState();
+  showSettings();
+  document.getElementById('editArrivalModal').classList.remove('show');
 }
 
 // ============================================================
@@ -2454,9 +2524,28 @@ function openLightbox(prefRaw) {
     <div class="gallery-lightbox-textfallback" style="display:${imgUrl ? 'none' : 'flex'};">🎉<span>${name}</span></div>
     <div class="gallery-lightbox-name">${name}</div>
     <div class="gallery-audio-btn" id="lightboxPlayBtn" onclick="toggleLightboxAudio('${prefRaw}')">▶️ 再生</div>
+    <div class="gallery-audio-btn" onclick="replayArrivalPopup('${prefRaw}')">🎊 到着演出をもう一度見る</div>
   `;
   document.getElementById('galleryLightbox').classList.add('show');
   lightboxPlaying = false;
+}
+
+// ギャラリーから到着ポップイン（紙吹雪）を進捗データに触らずリプレイする
+function replayArrivalPopup(prefRaw) {
+  const overlay = document.getElementById('arrivalPopup');
+  if (!overlay) return;
+  const imgUrl = getArrivalImageUrl(prefRaw);
+  const label = prefRaw === '東京' ? '🎌 出発！' : `🎉 ${prefDisplayName(prefRaw)} 到着！`;
+  overlay.innerHTML = `
+    <div class="arrival-popup-card">
+      ${imgUrl ? `<img src="${imgUrl}" class="arrival-popup-img" onerror="if(!this.dataset.fb){this.dataset.fb='1'; this.src='${DEFAULT_ARRIVAL_IMAGE}';} else {this.style.display='none'; this.nextElementSibling.style.display='flex';}">` : ''}
+      <div class="arrival-popup-textfallback" style="display:${imgUrl ? 'none' : 'flex'};">🎉</div>
+      <div class="arrival-popup-label">${label}</div>
+    </div>
+  `;
+  spawnConfetti(overlay);
+  overlay.classList.add('show');
+  setTimeout(() => { overlay.classList.remove('show'); overlay.innerHTML = ''; }, 2500);
 }
 
 function toggleLightboxAudio(prefRaw) {
