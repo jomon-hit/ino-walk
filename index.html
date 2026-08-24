@@ -1492,22 +1492,33 @@ function updateDashboard() {
   const arrivalBtn = document.getElementById('confirmArrivalBtn');
   if (arrivalBtn) {
     const currentPrefIdx = prefList.indexOf(state.pref);
-    if (currentPrefIdx >= 0 && currentPrefIdx < prefList.length - 1) {
+    const isLast = !(currentPrefIdx >= 0 && currentPrefIdx < prefList.length - 1);
+    if (!isLast) {
       const nextPrefName = prefDisplayName(prefList[currentPrefIdx + 1]);
       arrivalBtn.textContent = `🎉 ${nextPrefName} 到着じゃ！`;
-      arrivalBtn.disabled = false;
     } else {
       arrivalBtn.textContent = '🎉 完歩じゃ！';
-      arrivalBtn.disabled = false;
     }
-    // 残り10kmを切ったら、近づくほどじんわり色が濃くなる
+    // 残り5kmを切るまではグレーアウトで押せない。切ったら押せるようになり、近づくほどじんわり色が濃くなる
     const ACCENT_RGB = '196,92,61';
-    const THRESH = 10;
-    const intensity = state.km >= THRESH ? 0 : Math.max(0, 1 - (state.km / THRESH));
-    arrivalBtn.style.background = `rgba(${ACCENT_RGB}, ${intensity})`;
-    arrivalBtn.style.borderColor = `rgb(${ACCENT_RGB})`;
-    arrivalBtn.style.color = intensity > 0.55 ? '#fff' : `rgb(${ACCENT_RGB})`;
-    arrivalBtn.style.transition = 'background 0.4s, color 0.4s';
+    const THRESH = 5;
+    const withinRange = state.km < THRESH;
+    arrivalBtn.disabled = !withinRange;
+    const intensity = withinRange ? Math.max(0, 1 - (state.km / THRESH)) : 0;
+    if (withinRange) {
+      arrivalBtn.style.background = `rgba(${ACCENT_RGB}, ${intensity})`;
+      arrivalBtn.style.borderColor = `rgb(${ACCENT_RGB})`;
+      arrivalBtn.style.color = intensity > 0.55 ? '#fff' : `rgb(${ACCENT_RGB})`;
+      arrivalBtn.style.opacity = '1';
+      arrivalBtn.style.cursor = 'pointer';
+    } else {
+      arrivalBtn.style.background = 'var(--bg)';
+      arrivalBtn.style.borderColor = 'var(--border)';
+      arrivalBtn.style.color = 'var(--text-sub)';
+      arrivalBtn.style.opacity = '0.5';
+      arrivalBtn.style.cursor = 'not-allowed';
+    }
+    arrivalBtn.style.transition = 'background 0.4s, color 0.4s, opacity 0.4s';
   }
   
   // Prediction
@@ -2354,6 +2365,10 @@ function clampFutureDate(el) {
 }
 
 function confirmArrival() {
+  if (state.km >= 5) {
+    alert('次の県まで残り5km未満になったら押せるようになります。');
+    return;
+  }
   const currentPrefIdx = prefList.indexOf(state.pref);
   if (currentPrefIdx < 0 || currentPrefIdx >= prefList.length - 1) {
     alert('もう最終目的地（神奈川）に到達しています！');
