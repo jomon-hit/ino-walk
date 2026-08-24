@@ -36,6 +36,20 @@ body {
 }
 .serif { font-family: 'Noto Serif JP', serif; }
 
+/* 新バージョン通知バナー */
+.update-banner {
+  position: fixed; top:0; left:0; right:0; z-index:4000;
+  background: var(--accent); color:#fff; text-align:center;
+  font-size:13px; font-weight:700; padding:10px 16px;
+  padding-top: calc(10px + env(safe-area-inset-top));
+  cursor:pointer; box-shadow: 0 2px 10px rgba(0,0,0,0.25);
+  animation: updateBannerSlide 0.3s ease;
+}
+@keyframes updateBannerSlide {
+  from { transform: translateY(-100%); }
+  to { transform: translateY(0); }
+}
+
 /* Tab navigation */
 .tab-bar {
   position: fixed; bottom:0; left:0; right:0; z-index:1000;
@@ -635,12 +649,29 @@ body {
     <div style="font-size:16px;font-weight:900;margin-bottom:16px;">✏️ <span id="editArrivalPrefName"></span>の到着日</div>
     <div class="input-group">
       <div class="input-label">到着日</div>
-      <input type="date" class="input-date" id="editArrivalInput">
+      <input type="date" class="input-date" id="editArrivalInput" onchange="clampFutureDate(this)">
     </div>
     <div style="display:flex;gap:10px;margin-top:16px;">
       <button class="btn btn-outline" onclick="closeEditArrival()" style="flex:1;">キャンセル</button>
       <button class="btn btn-primary" onclick="applyEditArrival()" style="flex:1;">✅ 確定</button>
     </div>
+  </div>
+</div>
+
+<!-- 到着じゃ！確認 -->
+<div class="modal-overlay" id="confirmArrivalModal" onclick="closeConfirmArrivalModal(event)">
+  <div class="modal-content" style="padding:24px;">
+    <div style="font-size:16px;font-weight:900;margin-bottom:4px;">🎉 <span id="confirmArrivalPrefName"></span>に到着？</div>
+    <div style="font-size:12px;color:var(--text-sub);margin-bottom:16px;">到着した日を選んでください</div>
+    <div id="confirmArrivalChoice" style="display:flex;gap:10px;">
+      <button class="btn btn-primary" style="flex:1;" onclick="confirmArrivalWithDate('today')">📅 今日</button>
+      <button class="btn btn-outline" style="flex:1;" onclick="showConfirmArrivalDatePicker()">🗓️ ちょっと前</button>
+    </div>
+    <div id="confirmArrivalDatePickerRow" style="display:none;margin-top:14px;">
+      <input type="date" class="input-date" id="confirmArrivalDateInput" onchange="clampFutureDate(this)">
+      <button class="btn btn-primary" style="width:100%;margin-top:10px;" onclick="confirmArrivalWithDate('custom')">✅ この日で確定</button>
+    </div>
+    <button class="btn btn-outline" style="width:100%;margin-top:14px;" onclick="closeConfirmArrivalModal()">キャンセル</button>
   </div>
 </div>
 
@@ -655,8 +686,14 @@ body {
     <div class="modal-close" onclick="closeProgressInfo()">✕</div>
     <div style="font-weight:700;margin-bottom:10px;">📊 進捗の計算について</div>
     <div style="font-size:13px;line-height:1.8;color:var(--text-sub);">
-      この進捗（%）は、伊能忠敬の測量ルート総距離（約19,044km）に対して、入力した歩数×歩幅から算出しています。<br><br>
-      お使いの万歩計アプリが表示する距離は計算ロジックが異なるため、数字がぴったり一致しないことがあります。ズレていても故障ではないので安心してください。
+      この進捗（%）は、<strong>伊能図に記された日本の海岸線の総距離（約19,044km）</strong>に対して、入力した歩数×歩幅から算出しています。<br><br>
+      お使いの万歩計本体が表示する「日本一周%」とは計算ロジックが異なるため、数字がぴったり一致しないことがあります。ズレていても故障ではないので安心してください。<br><br>
+      <strong>【推測】なぜズレる？</strong><br>
+      万歩計本体の%表示は、県境をまたぐごとに一律で「1／41県分」進む単純計算をしている可能性があります（例：6県通過なら 6÷41≈14.6%）。実際の県境は距離がバラバラ（千葉は短く、北海道は長い、など）なので、県の数だけで均等に割ると、区間の短い県が続くあいだは万歩計側の%が先行しやすくなります。<br>
+      一方このアプリは、県の数ではなく<strong>実際に歩いた距離（km）</strong>をもとに計算しているので、より実距離に近い値になります。<br><br>
+      あくまでも推測の域を出ませんが、全踏破目標距離に対するパーセンテージは、このアプリが正確だと思います。<br><br>
+      <strong>本家・伊能忠敬隊との比較について</strong><br>
+      実際の伊能忠敬の測量は、主に9回（資料によっては江戸府内のみの回を含め10回とするものも）に分けて行われました。合計の陸路移動距離は4万kmを超え、ほぼ地球一周に相当すると言われています。この19,044kmという数字は「伊能図に描かれた海岸線の長さ」であって、忠敬本人が実際に歩いた距離（地球一周分）とは別物です。リアル伊能さんとの比較は、この進捗（%）よりも「おもしろ統計」の<strong>地球一周換算</strong>のパーセンテージで見るのがおすすめです。
     </div>
   </div>
 </div>
@@ -846,6 +883,7 @@ body {
       <span class="label">あと約</span><span class="value" id="npSteps">- 歩</span>
       <span class="label">今のペースなら</span><span class="value" id="npDays">- 日</span>
     </div>
+    <button class="btn btn-outline" style="margin-top:14px;" id="confirmArrivalBtn" onclick="confirmArrival()">🎉 到着じゃ！</button>
   </div>
 
   <!-- Prediction -->
@@ -1449,6 +1487,28 @@ function updateDashboard() {
   document.getElementById('npDist').innerHTML = `${state.km} km <button onclick="openEditKm()" style="font-size:11px;padding:2px 8px;border:1px solid var(--border);border-radius:6px;background:var(--bg);cursor:pointer;color:var(--accent3);">✏️修正</button>`;
   document.getElementById('npSteps').textContent = `${c.nextSteps.toLocaleString()} 歩`;
   document.getElementById('npDays').textContent = c.nextDays > 0 ? `${c.nextDays} 日` : '-';
+
+  // 到着じゃボタンに次の県名を表示
+  const arrivalBtn = document.getElementById('confirmArrivalBtn');
+  if (arrivalBtn) {
+    const currentPrefIdx = prefList.indexOf(state.pref);
+    if (currentPrefIdx >= 0 && currentPrefIdx < prefList.length - 1) {
+      const nextPrefName = prefDisplayName(prefList[currentPrefIdx + 1]);
+      arrivalBtn.textContent = `🎉 ${nextPrefName} 到着じゃ！`;
+      arrivalBtn.disabled = false;
+    } else {
+      arrivalBtn.textContent = '🎉 完歩じゃ！';
+      arrivalBtn.disabled = false;
+    }
+    // 残り10kmを切ったら、近づくほどじんわり色が濃くなる
+    const ACCENT_RGB = '196,92,61';
+    const THRESH = 10;
+    const intensity = state.km >= THRESH ? 0 : Math.max(0, 1 - (state.km / THRESH));
+    arrivalBtn.style.background = `rgba(${ACCENT_RGB}, ${intensity})`;
+    arrivalBtn.style.borderColor = `rgb(${ACCENT_RGB})`;
+    arrivalBtn.style.color = intensity > 0.55 ? '#fff' : `rgb(${ACCENT_RGB})`;
+    arrivalBtn.style.transition = 'background 0.4s, color 0.4s';
+  }
   
   // Prediction
   if (c.predDate) {
@@ -2233,6 +2293,7 @@ function applySteps() {
   saveState();
   updateDashboard();
   document.getElementById('stepsModal').classList.remove('show');
+  checkForAppUpdate(); // 裏でこっそりアプリの更新確認
   const usedNow = getStepsUsedToday();
   if (usedNow >= 100000) {
     alert(`反映しました！\n本日の歩数入力はこれで終了です。お疲れさまでした！`);
@@ -2252,27 +2313,95 @@ function closeEditKm(e) {
   }
 }
 
+// 次の県へ突入する共通処理（歩数入力・残り距離修正・到着じゃボタンで共用）
+// 戻り値: 突入できたら true、最終目的地に到達済みなら false
+function advanceToNextPref(dateStr) {
+  const currentPrefIdx = prefList.indexOf(state.pref);
+  if (currentPrefIdx < 0 || currentPrefIdx >= prefList.length - 1) return false;
+  const nextPref = prefList[currentPrefIdx + 1];
+  const nextPrefStation = masterData.find(d => d.pref === nextPref);
+  if (!nextPrefStation) return false;
+
+  if (!state.arrivals[state.pref]) {
+    if (dateStr) {
+      state.arrivals[state.pref] = dateStr;
+    } else {
+      const today = new Date();
+      state.arrivals[state.pref] = `${today.getFullYear()}${(today.getMonth()+1).toString().padStart(2,'0')}${today.getDate().toString().padStart(2,'0')}`;
+    }
+  }
+  state.pref = nextPref;
+  state.km = nextPrefStation.nextDist;
+  document.getElementById('inputPref').value = nextPref;
+  document.getElementById('inputKm').value = state.km.toFixed(2);
+  showArrivalPopup(nextPref);
+  return true;
+}
+
+// 「🎉 到着じゃ！」ボタン：残りkmの数字を気にせず、次の県への到着を直接確定する
+function getTodayDateStr() {
+  const today = new Date();
+  return `${today.getFullYear()}-${(today.getMonth()+1).toString().padStart(2,'0')}-${today.getDate().toString().padStart(2,'0')}`;
+}
+
+// 到着日の入力欄で未来日付が選ばれたら今日の日付に戻す
+function clampFutureDate(el) {
+  const todayStr = getTodayDateStr();
+  if (el.value > todayStr) {
+    alert('未来の日付は選べません。今日の日付にしておきます。');
+    el.value = todayStr;
+  }
+}
+
+function confirmArrival() {
+  const currentPrefIdx = prefList.indexOf(state.pref);
+  if (currentPrefIdx < 0 || currentPrefIdx >= prefList.length - 1) {
+    alert('もう最終目的地（神奈川）に到達しています！');
+    return;
+  }
+  const nextPref = prefDisplayName(prefList[currentPrefIdx + 1]);
+  document.getElementById('confirmArrivalPrefName').textContent = nextPref;
+  document.getElementById('confirmArrivalChoice').style.display = 'flex';
+  document.getElementById('confirmArrivalDatePickerRow').style.display = 'none';
+  const todayStr = getTodayDateStr();
+  const dateInput = document.getElementById('confirmArrivalDateInput');
+  dateInput.value = todayStr;
+  dateInput.max = todayStr;
+  document.getElementById('confirmArrivalModal').classList.add('show');
+}
+
+function showConfirmArrivalDatePicker() {
+  document.getElementById('confirmArrivalChoice').style.display = 'none';
+  document.getElementById('confirmArrivalDatePickerRow').style.display = 'block';
+}
+
+function closeConfirmArrivalModal(e) {
+  if (!e || e.target === document.getElementById('confirmArrivalModal')) {
+    document.getElementById('confirmArrivalModal').classList.remove('show');
+  }
+}
+
+function confirmArrivalWithDate(mode) {
+  let dateStr = null;
+  if (mode === 'custom') {
+    const val = document.getElementById('confirmArrivalDateInput').value;
+    if (!val) { alert('日付を選んでください'); return; }
+    if (val > getTodayDateStr()) { alert('未来の日付は選べません。'); return; }
+    dateStr = val.replace(/-/g, '');
+  }
+  advanceToNextPref(dateStr); // modeが'today'ならdateStr=nullで今日が使われる
+  saveState();
+  updateDashboard();
+  document.getElementById('confirmArrivalModal').classList.remove('show');
+}
+
 function applyEditKm() {
   const val = parseFloat(document.getElementById('editKmInput').value);
   if (isNaN(val) || val < 0) { alert('正しい値を入力してください'); return; }
 
   if (val <= 0) {
     // 0になった＝その県は突破済み → 次の県へ自動移動（歩数入力時と同じ処理）
-    const currentPrefIdx = prefList.indexOf(state.pref);
-    if (currentPrefIdx >= 0 && currentPrefIdx < prefList.length - 1) {
-      const nextPref = prefList[currentPrefIdx + 1];
-      const nextPrefStation = masterData.find(d => d.pref === nextPref);
-      if (nextPrefStation) {
-        if (!state.arrivals[state.pref]) {
-          state.arrivals[state.pref] = new Date().toISOString().slice(0, 10);
-        }
-        state.pref = nextPref;
-        state.km = nextPrefStation.nextDist;
-        document.getElementById('inputPref').value = nextPref;
-        document.getElementById('inputKm').value = state.km.toFixed(2);
-        showArrivalPopup(nextPref);
-      }
-    } else {
+    if (!advanceToNextPref()) {
       state.km = 0;
       document.getElementById('inputKm').value = '0.00';
     }
@@ -2296,9 +2425,9 @@ function openEditArrival(prefRaw) {
   if (existing && existing.length === 8) {
     input.value = `${existing.slice(0,4)}-${existing.slice(4,6)}-${existing.slice(6,8)}`;
   } else {
-    const today = new Date();
-    input.value = `${today.getFullYear()}-${(today.getMonth()+1).toString().padStart(2,'0')}-${today.getDate().toString().padStart(2,'0')}`;
+    input.value = getTodayDateStr();
   }
+  input.max = getTodayDateStr();
   document.getElementById('editArrivalModal').classList.add('show');
 }
 
@@ -2311,6 +2440,7 @@ function closeEditArrival(e) {
 function applyEditArrival() {
   const val = document.getElementById('editArrivalInput').value;
   if (!val) { alert('日付を選んでください'); return; }
+  if (val > getTodayDateStr()) { alert('未来の日付は選べません。'); return; }
   state.arrivals[editArrivalTargetPref] = val.replace(/-/g, '');
   saveState();
   showSettings();
@@ -2748,6 +2878,49 @@ renderTrivia();
 showIntroIfNeeded();
 
 init();
+
+// ============================================================
+// アプリ更新チェック（「反映」ボタンを押すたびに裏でこっそり確認）
+// ============================================================
+let appInitialHash = null;
+
+async function computeTextHash(text) {
+  const enc = new TextEncoder().encode(text);
+  const buf = await crypto.subtle.digest('SHA-256', enc);
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+async function captureAppVersion() {
+  try {
+    const res = await fetch(location.pathname, { cache: 'no-store' });
+    const text = await res.text();
+    appInitialHash = await computeTextHash(text);
+  } catch (e) { /* オフライン等は無視 */ }
+}
+
+async function checkForAppUpdate() {
+  if (!appInitialHash) return;
+  try {
+    const res = await fetch(location.pathname + '?_=' + Date.now(), { cache: 'no-store' });
+    const text = await res.text();
+    const newHash = await computeTextHash(text);
+    if (newHash !== appInitialHash) {
+      showUpdateBanner();
+    }
+  } catch (e) { /* オフライン等は無視、次回に持ち越し */ }
+}
+
+function showUpdateBanner() {
+  if (document.getElementById('updateBanner')) return; // 既に表示中
+  const banner = document.createElement('div');
+  banner.id = 'updateBanner';
+  banner.className = 'update-banner';
+  banner.textContent = '🆕 新しいバージョンがあります。タップして更新';
+  banner.onclick = () => location.reload();
+  document.body.appendChild(banner);
+}
+
+captureAppVersion();
 </script>
 </body>
 </html>
