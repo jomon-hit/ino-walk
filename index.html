@@ -276,6 +276,35 @@ body {
 .btn-outline { background:transparent; border:2px solid var(--border); color:var(--text-sub); }
 .btn + .btn { margin-top:8px; }
 
+/* 到着じゃボタン：控えめサイズ＋キャプション＋県内進捗の分割バー */
+.btn-arrival {
+  width:auto; padding:9px 20px; font-size:13px; border-radius:20px;
+  display:block; margin:14px auto 0;
+}
+.arrival-caption {
+  text-align:center; font-size:11px; color:var(--text-sub); margin-top:6px; min-height:14px;
+}
+.pref-segment-bar {
+  display:flex; gap:1.5px; margin-top:10px;
+}
+.pref-segment-bar .seg {
+  flex:1; height:5px; border-radius:1.5px; background:var(--border);
+  transition: background 0.25s;
+}
+.pref-segment-bar .seg.filled { background: rgb(196,92,61); }
+.pref-segment-bar .seg.near { background: rgba(196,92,61,0.45); }
+
+/* トースト（alertの代わり。サンドボックス化されたプレビューでも表示される） */
+.toast-popup {
+  position:fixed; left:50%; bottom:90px; transform:translateX(-50%) translateY(8px);
+  background:rgba(30,26,22,0.92); color:#fff; padding:11px 18px; border-radius:12px;
+  font-size:13px; max-width:84%; text-align:center; z-index:9999;
+  box-shadow:0 4px 16px rgba(0,0,0,0.35); line-height:1.5; white-space:pre-line;
+  opacity:0; pointer-events:none; transition:opacity 0.25s, transform 0.25s;
+  font-family:'Noto Sans JP',sans-serif;
+}
+.toast-popup.show { opacity:1; transform:translateX(-50%) translateY(0); }
+
 /* Map */
 #map { height: calc(100vh - 140px); border-radius:12px; margin-bottom:12px; }
 .map-legend {
@@ -883,7 +912,9 @@ body {
       <span class="label">あと約</span><span class="value" id="npSteps">- 歩</span>
       <span class="label">今のペースなら</span><span class="value" id="npDays">- 日</span>
     </div>
-    <button class="btn btn-outline" style="margin-top:14px;" id="confirmArrivalBtn" onclick="confirmArrival()">🎉 到着じゃ！</button>
+    <div class="pref-segment-bar" id="prefSegmentBar"></div>
+    <button class="btn btn-outline btn-arrival" id="confirmArrivalBtn" onclick="confirmArrival()">🎉 到着じゃ！</button>
+    <div class="arrival-caption" id="arrivalCaption"></div>
   </div>
 
   <!-- Prediction -->
@@ -1000,6 +1031,40 @@ body {
     <div id="settArrivalLog"></div>
   </div>
   <div class="card">
+    <div class="card-title"><span class="icon">👥</span> 友達の伊能さんも見る</div>
+    <p style="font-size:12px;color:var(--text-sub);margin-bottom:10px;">
+      ログイン不要。あなたの伊能さん番号を友達に伝えて、友達の番号を教えてもらって入力するだけです。
+    </p>
+    <div style="background:var(--bg);border-radius:8px;padding:10px;margin-bottom:12px;text-align:center;">
+      <div style="font-size:11px;color:var(--text-sub);">あなたの伊能さん番号</div>
+      <div id="myFriendNumber" style="font-size:22px;font-weight:700;color:var(--accent);letter-spacing:2px;">-----</div>
+      <p style="font-size:11px;color:var(--text-sub);margin-top:4px;">この番号を友達に教えてください</p>
+    </div>
+
+    <div class="input-label">マイ伊能さんの表示名（省略可・重複OK）</div>
+    <div style="display:flex;gap:8px;align-items:center;margin-bottom:12px;">
+      <input type="text" class="input-number" id="friendNameInput" placeholder="例：はまとしょ太郎" style="flex:1;">
+      <button class="btn btn-secondary" onclick="saveFriendNameFromInput()" style="width:auto;padding:10px 16px;font-size:13px;">保存</button>
+    </div>
+
+    <div class="input-label">友達の伊能さん番号を追加</div>
+    <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px;">
+      <input type="text" class="input-number" id="friendAddInput" placeholder="12345" inputmode="numeric" style="flex:1;">
+      <button class="btn btn-secondary" onclick="addFriendByNumber()" style="width:auto;padding:10px 16px;font-size:13px;">追加</button>
+    </div>
+    <div id="friendWatchStatus" style="font-size:12px;color:var(--accent2);margin-bottom:10px;"></div>
+
+    <div id="friendWatchList" style="margin-bottom:10px;"></div>
+
+    <div class="input-label">地図上の友達表示</div>
+    <div style="display:flex;gap:16px;margin-bottom:10px;font-size:13px;">
+      <label style="display:flex;align-items:center;gap:4px;"><input type="radio" name="friendMode" value="selected" onchange="setFriendMode('selected')"> 追加した人だけ</label>
+      <label style="display:flex;align-items:center;gap:4px;"><input type="radio" name="friendMode" value="all" onchange="setFriendMode('all')"> 全員表示</label>
+    </div>
+    <button class="btn btn-outline" onclick="fetchFriends(true)" style="font-size:13px;padding:10px;">🔄 友達の位置を更新</button>
+    <div id="friendListStatus" style="font-size:11px;color:var(--text-sub);margin-top:6px;"></div>
+  </div>
+  <div class="card">
     <div class="card-title"><span class="icon">🔗</span> データのバックアップ・端末変更</div>
     <p style="font-size:12px;color:var(--text-sub);margin-bottom:8px;">データはこの端末のブラウザに自動保存されます。<br>📱 <strong>別の端末に引き継ぐとき</strong>や 💾 <strong>バックアップを取りたいとき</strong>は、下のURLを生成してコピーしておいてください。そのURLを新しい端末で開くと、同じ進捗から始められます。</p>
     <textarea id="bookmarkUrl" style="width:100%;height:60px;font-size:11px;border:1px solid var(--border);border-radius:6px;padding:8px;resize:none;" readonly></textarea>
@@ -1049,11 +1114,29 @@ const MARATHON = 42.195;
 const TOKAIDO = 492; // km (東海道五十三次 片道)
 const EARTH_CIRC = 40075; // km
 const STRIDE_CM = 62; // 仮歩幅
+const FRIENDS_GAS_URL = ''; // ← GAS Web AppのURLをデプロイ後にここへ貼る（空なら友達機能は無効）
 
 // ============================================================
 // STATE
 // ============================================================
 let masterData = [];
+
+// alertの代わりに使う軽量トースト（サンドボックス化されたプレビューiframeでもネイティブalertに頼らず表示できる）
+function showToast(msg, duration) {
+  duration = duration || 3200;
+  let el = document.getElementById('appToast');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'appToast';
+    el.className = 'toast-popup';
+    document.body.appendChild(el);
+  }
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(el._hideTimer);
+  el._hideTimer = setTimeout(() => el.classList.remove('show'), duration);
+}
+
 let prefList = [];
 let diaryByRoute = {}; // route_id → [entries]
 let state = { start: '', pref: '', km: 0, stride: 0, arrivals: {} };
@@ -1352,6 +1435,8 @@ function saveState() {
   // localStorageに自動保存（毎回）
   saveToLocalStorage();
   // URLは更新しない（クリーンなURLを維持）
+  // 友達位置共有：進捗が動くたびに連動送信（デバウンス）
+  scheduleSendMyPosition();
 }
 
 // ============================================================
@@ -1434,7 +1519,8 @@ function calcProgress() {
   return {
     totalDist, remainDist, progressPct, elapsedDays,
     avgDist, avgSteps, remainDays, predDate, stride,
-    nextSteps, nextDays, currentStation
+    nextSteps, nextDays, currentStation,
+    inPrefDist, prefDist: curPrefInfo.dist
   };
 }
 
@@ -1499,26 +1585,45 @@ function updateDashboard() {
     } else {
       arrivalBtn.textContent = '🎉 完歩じゃ！';
     }
-    // 残り5kmを切るまではグレーアウトで押せない。切ったら押せるようになり、近づくほどじんわり色が濃くなる
+    // 残り5kmを切るまでは押せない（タップすると確認モーダル側のガードが理由をポップアップする）
     const ACCENT_RGB = '196,92,61';
     const THRESH = 5;
     const withinRange = state.km < THRESH;
-    arrivalBtn.disabled = !withinRange;
-    const intensity = withinRange ? Math.max(0, 1 - (state.km / THRESH)) : 0;
     if (withinRange) {
-      arrivalBtn.style.background = `rgba(${ACCENT_RGB}, ${intensity})`;
+      arrivalBtn.style.background = `rgb(${ACCENT_RGB})`;
       arrivalBtn.style.borderColor = `rgb(${ACCENT_RGB})`;
-      arrivalBtn.style.color = intensity > 0.55 ? '#fff' : `rgb(${ACCENT_RGB})`;
+      arrivalBtn.style.color = '#fff';
       arrivalBtn.style.opacity = '1';
       arrivalBtn.style.cursor = 'pointer';
     } else {
       arrivalBtn.style.background = 'var(--bg)';
       arrivalBtn.style.borderColor = 'var(--border)';
       arrivalBtn.style.color = 'var(--text-sub)';
-      arrivalBtn.style.opacity = '0.5';
-      arrivalBtn.style.cursor = 'not-allowed';
+      arrivalBtn.style.opacity = '0.6';
+      arrivalBtn.style.cursor = 'pointer'; // disabledにせず、タップで理由を案内する
     }
-    arrivalBtn.style.transition = 'background 0.4s, color 0.4s, opacity 0.4s';
+    arrivalBtn.style.transition = 'background 0.3s, color 0.3s, opacity 0.3s';
+
+    // キャプション
+    const captionEl = document.getElementById('arrivalCaption');
+    if (captionEl) {
+      captionEl.textContent = withinRange
+        ? '到着日を記録するよ'
+        : `あと ${state.km.toFixed(1)} km で押せるようになるよ`;
+    }
+  }
+
+  // 現在の県内での踏破状況を50分割バーで表示（じんわりグラデの代わり）
+  const segBar = document.getElementById('prefSegmentBar');
+  if (segBar && c.prefDist) {
+    const SEGMENTS = 50;
+    const fraction = Math.min(Math.max((c.inPrefDist || 0) / c.prefDist, 0), 1);
+    const filledCount = Math.round(fraction * SEGMENTS);
+    let segHtml = '';
+    for (let i = 0; i < SEGMENTS; i++) {
+      segHtml += `<div class="seg${i < filledCount ? ' filled' : ''}"></div>`;
+    }
+    segBar.innerHTML = segHtml;
   }
   
   // Prediction
@@ -1585,6 +1690,215 @@ function getInouIcon() {
 });
   }
   return inouIcon;
+}
+
+// ============================================================
+// 友達の伊能さん（位置共有）
+// ============================================================
+const FRIEND_ID_KEY = 'inowalk_friendId';
+const FRIEND_NAME_KEY = 'inowalk_friendName';
+const FRIEND_MODE_KEY = 'inowalk_friendMode'; // 'all' | 'selected'
+const FRIEND_WATCH_KEY = 'inowalk_friendWatch'; // { "12345": true, "67890": false }
+const FRIEND_CACHE_KEY = 'inowalk_friendCache';
+
+let friendsCache = [];       // GASから取得した全員分 [{id,name,totalDist,updatedAt}]
+let friendMarkers = [];      // 地図上の友達マーカー
+let friendSendTimer = null;
+
+// 自分の伊能さん番号（5桁・友達に口頭で伝える用）。初回だけ生成して固定
+function getFriendId() {
+  try {
+    let id = localStorage.getItem(FRIEND_ID_KEY);
+    if (!id) {
+      id = String(Math.floor(10000 + Math.random() * 90000)); // 10000〜99999
+      localStorage.setItem(FRIEND_ID_KEY, id);
+    }
+    return id;
+  } catch(e) { return '00000'; }
+}
+
+function getFriendName() {
+  try { return localStorage.getItem(FRIEND_NAME_KEY) || ''; } catch(e) { return ''; }
+}
+
+function saveFriendNameFromInput() {
+  const name = (document.getElementById('friendNameInput').value || '').trim();
+  try {
+    if (name) localStorage.setItem(FRIEND_NAME_KEY, name);
+    else localStorage.removeItem(FRIEND_NAME_KEY);
+  } catch(e) {}
+  scheduleSendMyPosition(true);
+}
+
+function getFriendMode() {
+  try { return localStorage.getItem(FRIEND_MODE_KEY) || 'selected'; } catch(e) { return 'selected'; }
+}
+function setFriendMode(mode) {
+  try { localStorage.setItem(FRIEND_MODE_KEY, mode); } catch(e) {}
+  renderFriendsOnMap();
+}
+
+// 追加した友達番号のON/OFF管理（TRUE=表示中、FALSE=非表示）。削除はしない＝また番号を入れれば復活
+function getFriendWatch() {
+  try { return JSON.parse(localStorage.getItem(FRIEND_WATCH_KEY) || '{}'); } catch(e) { return {}; }
+}
+function setFriendWatchFlag(id, flag) {
+  const w = getFriendWatch();
+  w[id] = flag;
+  try { localStorage.setItem(FRIEND_WATCH_KEY, JSON.stringify(w)); } catch(e) {}
+}
+
+function addFriendByNumber() {
+  const raw = (document.getElementById('friendAddInput').value || '').trim();
+  const statusEl = document.getElementById('friendWatchStatus');
+  if (!/^\d{4,6}$/.test(raw)) {
+    statusEl.textContent = '5桁くらいの番号を入力してください';
+    return;
+  }
+  if (raw === getFriendId()) {
+    statusEl.textContent = 'それはあなた自身の番号です';
+    return;
+  }
+  setFriendWatchFlag(raw, true);
+  document.getElementById('friendAddInput').value = '';
+  statusEl.textContent = `${raw} を追加しました`;
+  renderFriendsSettingsList();
+  fetchFriends();
+}
+
+// 地図アイコンをタップ／設定の✕タップ → 非表示に（番号を再入力すればまた表示される）
+function hideFriend(id) {
+  setFriendWatchFlag(id, false);
+  renderFriendsSettingsList();
+  renderFriendsOnMap();
+}
+
+// 進捗が動くたびにsaveState()から呼ばれる（連動・デバウンス送信）
+function scheduleSendMyPosition(immediate) {
+  if (!FRIENDS_GAS_URL) return;
+  if (friendSendTimer) clearTimeout(friendSendTimer);
+  if (immediate) { sendMyPosition(); return; }
+  friendSendTimer = setTimeout(sendMyPosition, 1500);
+}
+
+async function sendMyPosition() {
+  if (!FRIENDS_GAS_URL) return;
+  if (!state.pref || !masterData.length) return;
+  const c = calcProgress();
+  if (!c.totalDist && c.totalDist !== 0) return;
+  const payload = {
+    id: getFriendId(),
+    name: getFriendName() || `伊能さん${getFriendId()}`,
+    totalDist: c.totalDist,
+    updatedAt: new Date().toISOString()
+  };
+  try {
+    await fetch(FRIENDS_GAS_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // GASのpreflight回避
+      body: JSON.stringify(payload)
+    });
+  } catch(e) {
+    console.log('friend position send failed:', e);
+  }
+}
+
+async function fetchFriends(manual) {
+  if (!FRIENDS_GAS_URL) return;
+  const statusEl = document.getElementById('friendListStatus');
+  if (manual && statusEl) statusEl.textContent = '更新中…';
+  try {
+    const resp = await fetch(FRIENDS_GAS_URL, { cache: 'no-store' });
+    const data = await resp.json();
+    friendsCache = Array.isArray(data) ? data : [];
+    try { localStorage.setItem(FRIEND_CACHE_KEY, JSON.stringify(friendsCache)); } catch(e) {}
+    if (statusEl) statusEl.textContent = `最終更新：${new Date().toLocaleTimeString('ja-JP')}（登録${friendsCache.length}人）`;
+  } catch(e) {
+    console.log('fetch friends failed:', e);
+    if (statusEl) statusEl.textContent = '更新に失敗しました';
+    try { friendsCache = JSON.parse(localStorage.getItem(FRIEND_CACHE_KEY) || '[]'); } catch(e2) {}
+  }
+  renderFriendsSettingsList();
+  renderFriendsOnMap();
+}
+
+function renderFriendsSettingsList() {
+  const numEl = document.getElementById('myFriendNumber');
+  if (numEl) numEl.textContent = getFriendId();
+
+  const modeInputs = document.querySelectorAll('input[name="friendMode"]');
+  const mode = getFriendMode();
+  modeInputs.forEach(inp => { inp.checked = inp.value === mode; });
+
+  const container = document.getElementById('friendWatchList');
+  if (!container) return;
+  const watch = getFriendWatch();
+  const activeIds = Object.keys(watch).filter(id => watch[id]);
+  if (activeIds.length === 0) {
+    container.innerHTML = '<span style="font-size:12px;color:var(--text-sub);">まだ誰も追加していません</span>';
+    return;
+  }
+  container.innerHTML = activeIds.map(id => {
+    const f = friendsCache.find(x => x.id === id);
+    const label = f ? f.name : `${id}（未確認）`;
+    return `<div style="display:flex;align-items:center;justify-content:space-between;background:var(--bg);border-radius:8px;padding:8px 10px;margin-bottom:6px;font-size:13px;">
+      <span>🚶 ${label}<span style="color:var(--text-sub);font-size:11px;margin-left:4px;">#${id}</span></span>
+      <span onclick="hideFriend('${id}')" style="cursor:pointer;color:var(--accent);font-weight:700;padding:2px 8px;">✕</span>
+    </div>`;
+  }).join('');
+}
+
+// totalDist（累積km）から地図上の緯度経度を求める（自分のマーカーと同じ補間ロジック）
+function getLatLngForTotalDist(totalDist) {
+  if (!masterData.length) return null;
+  let target = null, targetCum = 0;
+  for (const s of masterData) {
+    const sCum = getStationRealCumDist(s);
+    if (sCum <= totalDist) { target = s; targetCum = sCum; }
+  }
+  if (!target) target = masterData[0], targetCum = getStationRealCumDist(masterData[0]);
+  const nextStation = masterData.find(ns => ns.id === target.id + 1);
+  let lat = target.lat, lng = target.lng;
+  if (nextStation && target.nextDist > 0) {
+    const progress = Math.min(Math.max((totalDist - targetCum) / target.nextDist, 0), 1);
+    lat = target.lat + progress * (nextStation.lat - target.lat);
+    lng = target.lng + progress * (nextStation.lng - target.lng);
+  }
+  return { lat, lng };
+}
+
+function getFriendIcon(name, id) {
+  return L.divIcon({
+    className: 'friend-marker-icon',
+    html: `<div style="position:relative;cursor:pointer;">
+      <div style="background:var(--accent3);color:#fff;font-size:10px;font-weight:700;padding:3px 7px;border-radius:12px;box-shadow:0 1px 4px rgba(0,0,0,0.3);white-space:nowrap;opacity:0.92;">🚶 ${name}</div>
+      <div style="position:absolute;top:-6px;right:-4px;background:#fff;color:var(--accent);font-size:9px;font-weight:900;width:14px;height:14px;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 3px rgba(0,0,0,0.3);">✕</div>
+    </div>`,
+    iconSize: null,
+    iconAnchor: [10, 10]
+  });
+}
+
+function renderFriendsOnMap() {
+  if (!map) return;
+  friendMarkers.forEach(m => map.removeLayer(m));
+  friendMarkers = [];
+  if (!FRIENDS_GAS_URL) return;
+
+  const myId = getFriendId();
+  const mode = getFriendMode();
+  const watch = getFriendWatch();
+  let list = friendsCache.filter(f => f.id !== myId && f.name && (f.totalDist || f.totalDist === 0));
+  if (mode === 'selected') list = list.filter(f => watch[f.id]);
+
+  list.forEach(f => {
+    const pos = getLatLngForTotalDist(f.totalDist);
+    if (!pos) return;
+    const marker = L.marker([pos.lat, pos.lng], { icon: getFriendIcon(f.name, f.id) }).addTo(map);
+    // タップで即・非表示（確認なし。また番号を入れれば復活する）
+    marker.on('click', () => hideFriend(f.id));
+    friendMarkers.push(marker);
+  });
 }
 
 function updateMap() {
@@ -1664,6 +1978,8 @@ function updateMap() {
   if (c.currentStation && c.currentStation.lat) {
     map.setView([c.currentStation.lat, c.currentStation.lng], 8);
   }
+
+  renderFriendsOnMap();
 }
 
 // ============================================================
@@ -1770,7 +2086,7 @@ function switchTab(tab) {
     document.getElementById('pageHome').classList.add('active');
   } else if (tab === 'map') {
     document.getElementById('pageMap').classList.add('active');
-    setTimeout(() => { initMap(); map.invalidateSize(); updateMap(); }, 100);
+    setTimeout(() => { initMap(); map.invalidateSize(); updateMap(); fetchFriends(); }, 100);
   } else if (tab === 'stations') {
     document.getElementById('pageStations').classList.add('active');
     renderStationsList();
@@ -1940,7 +2256,12 @@ function showSettings() {
     </div>`;
   });
   container.innerHTML = html;
-  
+
+  // 友達の伊能さん
+  document.getElementById('friendNameInput').value = getFriendName();
+  renderFriendsSettingsList();
+  fetchFriends();
+
   // Bookmark URL
   document.getElementById('bookmarkUrl').value = buildUrl();
 }
@@ -2086,6 +2407,7 @@ function resetAll() {
 // ============================================================
 async function init() {
   loadState();
+  try { friendsCache = JSON.parse(localStorage.getItem(FRIEND_CACHE_KEY) || '[]'); } catch(e) {}
   await loadData();
   loadDiary(); // 日記データを非同期で読み込み（完了を待たない）
   
@@ -2366,7 +2688,7 @@ function clampFutureDate(el) {
 
 function confirmArrival() {
   if (state.km >= 5) {
-    alert('次の県まで残り5km未満になったら押せるようになります。');
+    showToast(`次の都道府県境まで残り5kmを切ると押せるようになります。\n（現在の残り：${state.km.toFixed(1)} km）`);
     return;
   }
   const currentPrefIdx = prefList.indexOf(state.pref);
