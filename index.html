@@ -1011,20 +1011,14 @@ body {
   </div>
 
   <div class="card">
-    <p style="font-size:12px;color:var(--text-sub);margin-bottom:10px;">
-      ログイン不要。あなたの伊能さん番号を友達に伝えて、友達の番号を教えてもらって入力するだけです。
-    </p>
-    <div style="background:var(--bg);border-radius:8px;padding:10px;margin-bottom:12px;text-align:center;">
-      <div style="font-size:11px;color:var(--text-sub);">あなたの伊能さん番号</div>
-      <div id="myFriendNumber" style="font-size:22px;font-weight:700;color:var(--accent);letter-spacing:2px;">----</div>
-      <p style="font-size:11px;color:var(--text-sub);margin-top:4px;">この番号を友達に教えてください</p>
+    <div class="input-label">地図上の表示</div>
+    <div style="display:flex;gap:16px;margin-bottom:10px;font-size:13px;">
+      <label style="display:flex;align-items:center;gap:4px;"><input type="radio" name="friendMode" value="selected" onchange="setFriendMode('selected')"> 友達だけ</label>
+      <label style="display:flex;align-items:center;gap:4px;"><input type="radio" name="friendMode" value="all" onchange="setFriendMode('all')"> 全伊能</label>
     </div>
-
-    <div class="input-label">マイ伊能さんの表示名（省略可・重複OK）</div>
-    <div style="display:flex;gap:8px;align-items:center;margin-bottom:4px;">
-      <input type="text" class="input-number" id="friendNameInput" placeholder="令和の伊能忠敬" style="flex:1;">
-      <button class="btn btn-secondary" onclick="saveFriendNameFromInput()" style="width:auto;padding:10px 16px;font-size:13px;">保存</button>
-    </div>
+    <div id="allinoMapContainer" style="height:340px;border-radius:12px;overflow:hidden;"></div>
+    <button class="btn btn-outline" onclick="fetchFriends(true)" style="margin-top:10px;font-size:13px;padding:10px;">🔄 更新（開くたびに読み込み直します）</button>
+    <div id="friendListStatus" style="font-size:11px;color:var(--text-sub);margin-top:6px;"></div>
   </div>
 
   <div class="card">
@@ -1035,17 +1029,6 @@ body {
     </div>
     <div id="friendWatchStatus" style="font-size:12px;color:var(--accent2);margin-bottom:10px;"></div>
     <div id="friendWatchList" style="margin-bottom:4px;"></div>
-  </div>
-
-  <div class="card">
-    <div class="input-label">地図上の表示</div>
-    <div style="display:flex;gap:16px;margin-bottom:10px;font-size:13px;">
-      <label style="display:flex;align-items:center;gap:4px;"><input type="radio" name="friendMode" value="selected" onchange="setFriendMode('selected')"> 友達だけ</label>
-      <label style="display:flex;align-items:center;gap:4px;"><input type="radio" name="friendMode" value="all" onchange="setFriendMode('all')"> 全伊能</label>
-    </div>
-    <div id="allinoMapContainer" style="height:340px;border-radius:12px;overflow:hidden;"></div>
-    <button class="btn btn-outline" onclick="fetchFriends(true)" style="margin-top:10px;font-size:13px;padding:10px;">🔄 更新（開くたびに読み込み直します）</button>
-    <div id="friendListStatus" style="font-size:11px;color:var(--text-sub);margin-top:6px;"></div>
   </div>
 </div>
 
@@ -1097,7 +1080,8 @@ body {
   <div class="card">
     <div class="card-title"><span class="icon">👥</span> 全伊能（みんないのう）さん</div>
     <p style="font-size:12px;color:var(--text-sub);margin-bottom:10px;">
-      友達の伊能さんが今どこにいるか見られる機能です。使うと4桁の番号が発行されて、位置が共有されます（ログイン不要）。
+      あなたの伊能さんのアプリ上の現在地を、伴歩仲間に教えられる機能です。有効にすると、ホーム画面の「反映」ボタンを押したタイミングで、全伊能地図にマイ伊能さんの位置情報を送るようになります。（端末の位置情報とは一切関係ありません）<br>
+      番号を知っている友達だけの表示にすることもできます。ただし、自分以外の伊能さんの現在地は、あくまでもざっくり、なんとなくの目安です。
     </p>
     <div style="display:flex;align-items:center;justify-content:space-between;background:var(--bg);border-radius:8px;padding:12px;">
       <span style="font-size:14px;font-weight:600;">全伊能機能を使う</span>
@@ -1107,6 +1091,28 @@ body {
       </label>
     </div>
     <p id="allinoToggleStatus" style="font-size:11px;color:var(--text-sub);margin-top:6px;"></p>
+
+    <div style="background:var(--bg);border-radius:8px;padding:10px;margin-top:12px;text-align:center;">
+      <div style="font-size:11px;color:var(--text-sub);">あなたの伊能さん番号</div>
+      <div id="myFriendNumber" style="font-size:22px;font-weight:700;color:var(--accent);letter-spacing:2px;">----</div>
+      <p style="font-size:11px;color:var(--text-sub);margin-top:4px;">この番号を友達に教えてください</p>
+      <div style="text-align:center;margin-top:8px;">
+        <span onclick="toggleFriendIdOverride()" style="font-size:11px;color:var(--text-sub);text-decoration:underline;cursor:pointer;">番号を手動で変更</span>
+      </div>
+      <div id="friendIdOverrideBox" style="display:none;margin-top:8px;">
+        <p style="font-size:11px;color:var(--text-sub);text-align:left;margin-bottom:6px;">好きな4桁番号を入力してください。先に同じ番号を使っている人がいたら、別の組み合わせで試してね。</p>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <input type="text" class="input-number" id="friendIdOverrideInput" placeholder="1414" inputmode="numeric" style="flex:1;">
+          <button class="btn btn-secondary" onclick="overrideFriendId()" style="width:auto;padding:10px 16px;font-size:13px;">変更</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="input-label" style="margin-top:12px;">マイ伊能さんの表示名（省略可・重複OK）</div>
+    <div style="display:flex;gap:8px;align-items:center;margin-bottom:4px;">
+      <input type="text" class="input-number" id="friendNameInput" placeholder="令和の伊能忠敬" style="flex:1;">
+      <button class="btn btn-secondary" onclick="saveFriendNameFromInput()" style="width:auto;padding:10px 16px;font-size:13px;">保存</button>
+    </div>
   </div>
   <div class="card">
     <div class="card-title"><span class="icon">🔗</span> データのバックアップ・端末変更</div>
@@ -1787,6 +1793,26 @@ function ensureFriendId() {
   return id;
 }
 
+// 番号を手動で書き換えたい時用（コンソール操作不要）。既存の番号を上書きするだけ
+function toggleFriendIdOverride() {
+  const box = document.getElementById('friendIdOverrideBox');
+  if (box) box.style.display = box.style.display === 'none' ? 'block' : 'none';
+}
+function overrideFriendId() {
+  const raw = (document.getElementById('friendIdOverrideInput').value || '').trim();
+  if (!/^\d{3,5}$/.test(raw)) {
+    showToast('3〜5桁の数字を入力してください');
+    return;
+  }
+  const oldId = getFriendId(); // リネーム用に古い番号を控えておく
+  try { localStorage.setItem(FRIEND_ID_KEY, raw); } catch(e) {}
+  const numEl = document.getElementById('myFriendNumber');
+  if (numEl) numEl.textContent = raw;
+  document.getElementById('friendIdOverrideInput').value = '';
+  showToast(`番号を ${raw} に変更しました`);
+  sendMyPosition(oldId); // 新しい番号ですぐ送信。古い番号の行があればリネームして使い回す（幽霊行を作らない）
+}
+
 function getFriendName() {
   try { return localStorage.getItem(FRIEND_NAME_KEY) || ''; } catch(e) { return ''; }
 }
@@ -1851,7 +1877,8 @@ function scheduleSendMyPosition(immediate) {
   friendSendTimer = setTimeout(sendMyPosition, 1500);
 }
 
-async function sendMyPosition() {
+// oldIdを渡すと「番号のリネーム」として送信（GAS側が同じ行を書き換える。幽霊行を作らない）
+async function sendMyPosition(oldId) {
   if (!FRIENDS_GAS_URL || !getAllinoEnabled()) return;
   if (!state.pref || !masterData.length) return;
   const c = calcProgress();
@@ -1864,6 +1891,7 @@ async function sendMyPosition() {
     totalDist: c.totalDist,
     updatedAt: new Date().toISOString()
   };
+  if (oldId && oldId !== id) payload.oldId = oldId;
   try {
     await fetch(FRIENDS_GAS_URL, {
       method: 'POST',
@@ -1966,6 +1994,19 @@ function renderFriendsOnMap() {
   if (!allinoMap) return;
   friendMarkers.forEach(m => allinoMap.removeLayer(m));
   friendMarkers = [];
+
+  // マイ伊能さん（自分）は常に表示。本体の進捗マーカーと同じアイコンを使う
+  const c = calcProgress();
+  if (c.totalDist || c.totalDist === 0) {
+    const selfPos = getLatLngForTotalDist(c.totalDist);
+    if (selfPos) {
+      const selfMarker = L.marker([selfPos.lat, selfPos.lng], { icon: getInouIcon() }).addTo(allinoMap);
+      const selfName = getFriendName();
+      selfMarker.bindPopup(`<div style="font-size:12px;"><strong>マイ伊能さん${selfName ? '（' + selfName + '）' : ''}</strong></div>`);
+      friendMarkers.push(selfMarker);
+    }
+  }
+
   if (!FRIENDS_GAS_URL) return;
 
   const myId = getFriendId();
@@ -2175,8 +2216,6 @@ function switchTab(tab) {
     renderStationsList();
   } else if (tab === 'allino') {
     document.getElementById('pageAllIno').classList.add('active');
-    document.getElementById('friendNameInput').value = getFriendName();
-    document.getElementById('myFriendNumber').textContent = getFriendId();
     setTimeout(() => { initAllinoMap(); allinoMap.invalidateSize(); fetchFriends(); }, 100);
   } else if (tab === 'settings') {
     document.getElementById('pageSettings').classList.add('active');
