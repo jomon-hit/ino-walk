@@ -1122,7 +1122,7 @@ const MARATHON = 42.195;
 const TOKAIDO = 492; // km (東海道五十三次 片道)
 const EARTH_CIRC = 40075; // km
 const STRIDE_CM = 62; // 仮歩幅
-const FRIENDS_GAS_URL = ''; // ← GAS Web AppのURLをデプロイ後にここへ貼る（空なら友達機能は無効）
+const FRIENDS_GAS_URL = 'https://script.google.com/macros/s/AKfycbx56HShhKzyFipyt6R6a_zuBvCRXNr39pFWxxXxlgfNhgG28hvwHEDVnkuC6m8oq56NxA/exec';
 
 // ============================================================
 // STATE
@@ -1569,7 +1569,7 @@ function updateDashboard() {
   document.getElementById('remainDist').textContent = c.remainDist.toFixed(1);
   
   // Stats
-  document.getElementById('totalDist').textContent = c.totalDist.toFixed(1);
+  document.getElementById('totalDist').textContent = c.totalDist.toLocaleString('ja-JP', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
   document.getElementById('elapsedDays').textContent = c.elapsedDays;
   document.getElementById('avgDist').textContent = c.avgDist.toFixed(1);
   document.getElementById('avgSteps').textContent = c.avgSteps.toLocaleString();
