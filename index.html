@@ -1004,10 +1004,10 @@ body {
   <div id="stationsList"></div>
 </div>
 
-<!-- Page: みんないのう -->
+<!-- Page: 全伊能 -->
 <div class="page" id="pageAllIno">
   <div class="app-header">
-    <div class="app-title serif">みんないのう</div>
+    <div class="app-title serif">全伊能</div>
   </div>
 
   <div class="card">
@@ -1095,12 +1095,12 @@ body {
     <div id="settArrivalLog"></div>
   </div>
   <div class="card">
-    <div class="card-title"><span class="icon">👥</span> みんないのう</div>
+    <div class="card-title"><span class="icon">👥</span> 全伊能（みんないのう）さん</div>
     <p style="font-size:12px;color:var(--text-sub);margin-bottom:10px;">
       友達の伊能さんが今どこにいるか見られる機能です。使うと4桁の番号が発行されて、位置が共有されます（ログイン不要）。
     </p>
     <div style="display:flex;align-items:center;justify-content:space-between;background:var(--bg);border-radius:8px;padding:12px;">
-      <span style="font-size:14px;font-weight:600;">みんないのう機能を使う</span>
+      <span style="font-size:14px;font-weight:600;">全伊能機能を使う</span>
       <label class="switch">
         <input type="checkbox" id="allinoToggle" onchange="toggleAllinoEnabled(this.checked)">
         <span class="switch-slider"></span>
@@ -1142,7 +1142,7 @@ body {
     <span class="tab-icon">🏮</span>宿場
   </div>
   <div class="tab-item tab-disabled" id="tabAllIno" onclick="switchTab('allino')">
-    <span class="tab-icon">👥</span>みんないのう
+    <span class="tab-icon">👥</span>全伊能
   </div>
   <div class="tab-item" onclick="switchTab('settings')">
     <span class="tab-icon">⚙️</span>設定
@@ -1766,7 +1766,7 @@ function toggleAllinoEnabled(checked) {
   if (checked) {
     ensureFriendId();
     if (tab) tab.classList.remove('tab-disabled');
-    if (statusEl) statusEl.textContent = `あなたの番号：${getFriendId()}（「みんないのう」タブから確認できます）`;
+    if (statusEl) statusEl.textContent = `あなたの番号：${getFriendId()}（「全伊能」タブから確認できます）`;
     scheduleSendMyPosition(true);
   } else {
     if (tab) tab.classList.add('tab-disabled');
@@ -2350,7 +2350,7 @@ function showSettings() {
   const allinoStatus = document.getElementById('allinoToggleStatus');
   const enabled = getAllinoEnabled();
   if (allinoToggle) allinoToggle.checked = enabled;
-  if (allinoStatus) allinoStatus.textContent = enabled ? `あなたの番号：${getFriendId()}（「みんないのう」タブから確認できます）` : '';
+  if (allinoStatus) allinoStatus.textContent = enabled ? `あなたの番号：${getFriendId()}（「全伊能」タブから確認できます）` : '';
 
   // Bookmark URL
   document.getElementById('bookmarkUrl').value = buildUrl();
