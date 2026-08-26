@@ -768,6 +768,7 @@ body {
       <span class="gallery-audio-btn small" id="orderRandomBtn" onclick="setPlayAllOrder('random')">ランダム</span>
     </div>
     <span class="gallery-audio-btn small" id="playAllBtn" onclick="togglePlayAll()">▶️ 全部再生</span>
+    <span class="gallery-audio-btn small" id="playAllSkipBtn" onclick="skipPlayAllTrack()" style="display:none;">⏭ 次の曲</span>
     <span id="nowPlayingLabel" class="now-playing-label"></span>
   </div>
   <div class="gallery-grid" id="galleryGrid"></div>
@@ -1006,9 +1007,12 @@ body {
     <span class="legend-future">未到達</span>
   </div>
   <div id="allinoControls" style="display:none;padding:12px 16px;">
-    <div style="display:flex;gap:16px;margin-bottom:12px;font-size:13px;justify-content:center;">
+    <div style="display:flex;gap:16px;margin-bottom:8px;font-size:13px;justify-content:center;">
       <label style="display:flex;align-items:center;gap:4px;"><input type="radio" name="friendMode" value="selected" onchange="setFriendMode('selected')"> 友達だけ</label>
       <label style="display:flex;align-items:center;gap:4px;"><input type="radio" name="friendMode" value="all" onchange="setFriendMode('all')"> 全伊能</label>
+    </div>
+    <div style="display:flex;gap:12px;justify-content:center;font-size:11px;color:var(--text-sub);margin-bottom:12px;">
+      <span>🔵 等倍</span><span>🟡 2倍</span><span>⚪ それ以上</span>
     </div>
     <div class="card" style="margin-bottom:0;">
       <div class="input-label">友達の伊能さん番号を追加</div>
@@ -1112,6 +1116,13 @@ body {
     <div style="display:flex;gap:8px;align-items:center;margin-bottom:4px;">
       <input type="text" class="input-number" id="friendNameInput" placeholder="令和の伊能忠敬" style="flex:1;">
       <button class="btn btn-secondary" onclick="saveFriendNameFromInput()" style="width:auto;padding:10px 16px;font-size:13px;">保存</button>
+    </div>
+
+    <div class="input-label" style="margin-top:12px;">歩行モード（本体の設定に合わせて選んでね・自己申告制）</div>
+    <div style="display:flex;gap:12px;font-size:13px;">
+      <label style="display:flex;align-items:center;gap:4px;"><input type="radio" name="speedMode" value="normal" onchange="saveSpeedMode('normal')"> 等倍</label>
+      <label style="display:flex;align-items:center;gap:4px;"><input type="radio" name="speedMode" value="2x" onchange="saveSpeedMode('2x')"> 2倍</label>
+      <label style="display:flex;align-items:center;gap:4px;"><input type="radio" name="speedMode" value="over" onchange="saveSpeedMode('over')"> それ以上</label>
     </div>
   </div>
   <div class="card">
@@ -1747,6 +1758,7 @@ function getInouIcon() {
 // ============================================================
 const FRIEND_ID_KEY = 'inowalk_friendId';
 const FRIEND_NAME_KEY = 'inowalk_friendName';
+const SPEED_MODE_KEY = 'inowalk_speedMode'; // 'normal' | '2x' | 'over'（自己申告制）
 const FRIEND_MODE_KEY = 'inowalk_friendMode'; // 'all' | 'selected'
 const FRIEND_WATCH_KEY = 'inowalk_friendWatch'; // { "1234": true, "6789": false }
 const FRIEND_CACHE_KEY = 'inowalk_friendCache';
@@ -1821,6 +1833,15 @@ function saveFriendNameFromInput() {
   scheduleSendMyPosition(true);
 }
 
+// 歩行モード（等倍／2倍／それ以上）。本体のモード設定を自己申告してもらい、全伊能地図の色分けに使う
+function getSpeedMode() {
+  try { return localStorage.getItem(SPEED_MODE_KEY) || 'normal'; } catch(e) { return 'normal'; }
+}
+function saveSpeedMode(mode) {
+  try { localStorage.setItem(SPEED_MODE_KEY, mode); } catch(e) {}
+  scheduleSendMyPosition(true);
+}
+
 function getFriendMode() {
   try { return localStorage.getItem(FRIEND_MODE_KEY) || 'selected'; } catch(e) { return 'selected'; }
 }
@@ -1883,6 +1904,7 @@ async function sendMyPosition(oldId) {
   const payload = {
     id: id,
     name: getFriendName() || `伊能さん${id}`,
+    speedMode: getSpeedMode(),
     totalDist: c.totalDist,
     updatedAt: new Date().toISOString()
   };
@@ -1963,11 +1985,19 @@ function getLatLngForTotalDist(totalDist) {
   return { lat, lng };
 }
 
-function getFriendIcon(name, id) {
+// 歩行モード（自己申告）ごとの色：等倍=青、2倍=黄、それ以上=グレー（色なし）
+function getSpeedModeColor(speedMode) {
+  if (speedMode === '2x') return '#c9a02c';
+  if (speedMode === 'over') return '#9e9e9e';
+  return '#3b6fd6'; // normal（等倍）・未設定はデフォルトで等倍扱い
+}
+
+function getFriendIcon(name, id, speedMode) {
+  const color = getSpeedModeColor(speedMode);
   return L.divIcon({
     className: 'friend-marker-icon',
     html: `<div style="position:relative;cursor:pointer;">
-      <div style="background:var(--accent3);color:#fff;font-size:10px;font-weight:700;padding:3px 7px;border-radius:12px;box-shadow:0 1px 4px rgba(0,0,0,0.3);white-space:nowrap;opacity:0.92;">🚶 ${name}</div>
+      <div style="background:${color};color:#fff;font-size:10px;font-weight:700;padding:3px 7px;border-radius:12px;box-shadow:0 1px 4px rgba(0,0,0,0.3);white-space:nowrap;opacity:0.92;">🚶 ${name}</div>
       <div style="position:absolute;top:-6px;right:-4px;background:#fff;color:var(--accent);font-size:9px;font-weight:900;width:14px;height:14px;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 3px rgba(0,0,0,0.3);">✕</div>
     </div>`,
     iconSize: null,
@@ -2026,7 +2056,7 @@ function renderFriendsOnMap() {
   list.forEach(f => {
     const pos = getLatLngForTotalDist(f.totalDist);
     if (!pos) return;
-    const marker = L.marker([pos.lat, pos.lng], { icon: getFriendIcon(f.name, f.id) }).addTo(map);
+    const marker = L.marker([pos.lat, pos.lng], { icon: getFriendIcon(f.name, f.id, f.speedMode) }).addTo(map);
     // タップで即・非表示（確認なし。また番号を入れれば復活する）
     marker.on('click', () => hideFriend(f.id));
     friendMarkers.push(marker);
@@ -2396,12 +2426,16 @@ function showSettings() {
   });
   container.innerHTML = html;
 
-  // みんないのう：トグルの状態を反映
+  // 全伊能：トグルの状態、表示名、歩行モードを反映
   const allinoToggle = document.getElementById('allinoToggle');
   const allinoStatus = document.getElementById('allinoToggleStatus');
   const enabled = getAllinoEnabled();
   if (allinoToggle) allinoToggle.checked = enabled;
   if (allinoStatus) allinoStatus.textContent = enabled ? `あなたの番号：${getFriendId()}（「地図」タブの全伊能モードから確認できます）` : '';
+  const nameInput = document.getElementById('friendNameInput');
+  if (nameInput) nameInput.value = getFriendName();
+  const curSpeedMode = getSpeedMode();
+  document.querySelectorAll('input[name="speedMode"]').forEach(inp => { inp.checked = inp.value === curSpeedMode; });
 
   // Bookmark URL
   document.getElementById('bookmarkUrl').value = buildUrl();
@@ -3254,6 +3288,13 @@ function onPlayAllTrackEnded() {
   playAllAdvance();
 }
 
+// 「⏭ 次の曲」ボタン：今の曲を最後まで待たず、手動で次の曲に進める
+function skipPlayAllTrack() {
+  if (!playAllState.active) return;
+  playAllState.posInRound = (playAllState.posInRound + 1) % playAllState.queue.length;
+  playAllAdvance();
+}
+
 function stopPlayAll() {
   if (!playAllState.active) return;
   playAllState.active = false;
@@ -3263,10 +3304,12 @@ function stopPlayAll() {
 
 function updatePlayAllUI() {
   const btn = document.getElementById('playAllBtn');
+  const skipBtn = document.getElementById('playAllSkipBtn');
   const seqBtn = document.getElementById('orderSeqBtn');
   const rndBtn = document.getElementById('orderRandomBtn');
   const nowPlaying = document.getElementById('nowPlayingLabel');
   if (btn) btn.textContent = playAllState.active ? '⏹ 停止' : '▶️ 全部再生';
+  if (skipBtn) skipBtn.style.display = playAllState.active ? 'inline-block' : 'none';
   if (seqBtn) seqBtn.classList.toggle('active', playAllState.order === 'sequence');
   if (rndBtn) rndBtn.classList.toggle('active', playAllState.order === 'random');
   if (!playAllState.active && nowPlaying) nowPlaying.textContent = '';
