@@ -305,6 +305,13 @@ body {
 /* タブ無効化（みんないのう機能OFF時） */
 .tab-item.tab-disabled { opacity:0.35; pointer-events:none; }
 
+/* 地図ページ：マイ伊能／全伊能 モード切替ボタン */
+.map-mode-btn {
+  padding:7px 18px; border-radius:16px; font-size:13px; font-weight:600;
+  background:var(--bg); color:var(--text-sub); cursor:pointer; border:1px solid var(--border);
+}
+.map-mode-btn.active { background:rgb(196,92,61); color:#fff; border-color:rgb(196,92,61); }
+
 /* トースト（alertの代わり。サンドボックス化されたプレビューでも表示される） */
 .toast-popup {
   position:fixed; left:50%; bottom:90px; transform:translateX(-50%) translateY(8px);
@@ -988,11 +995,32 @@ body {
 
 <!-- Page: Map -->
 <div class="page" id="pageMap">
+  <div id="mapModeToggle" style="display:none;justify-content:center;gap:8px;padding:12px 16px 0;">
+    <span class="map-mode-btn active" data-mode="mine" onclick="switchMapMode('mine')">マイ伊能</span>
+    <span class="map-mode-btn" data-mode="allino" onclick="switchMapMode('allino')">全伊能</span>
+  </div>
   <div id="map"></div>
-  <div class="map-legend">
+  <div class="map-legend" id="mapLegend">
     <span class="legend-passed">通過済み</span>
     <span style="font-size:11px;color:var(--text-sub);">🧑‍🦯 現在地</span>
     <span class="legend-future">未到達</span>
+  </div>
+  <div id="allinoControls" style="display:none;padding:12px 16px;">
+    <div style="display:flex;gap:16px;margin-bottom:12px;font-size:13px;justify-content:center;">
+      <label style="display:flex;align-items:center;gap:4px;"><input type="radio" name="friendMode" value="selected" onchange="setFriendMode('selected')"> 友達だけ</label>
+      <label style="display:flex;align-items:center;gap:4px;"><input type="radio" name="friendMode" value="all" onchange="setFriendMode('all')"> 全伊能</label>
+    </div>
+    <div class="card" style="margin-bottom:0;">
+      <div class="input-label">友達の伊能さん番号を追加</div>
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px;">
+        <input type="text" class="input-number" id="friendAddInput" placeholder="1234" inputmode="numeric" style="flex:1;">
+        <button class="btn btn-secondary" onclick="addFriendByNumber()" style="width:auto;padding:10px 16px;font-size:13px;">追加</button>
+      </div>
+      <div id="friendWatchStatus" style="font-size:12px;color:var(--accent2);margin-bottom:10px;"></div>
+      <div id="friendWatchList" style="margin-bottom:4px;"></div>
+      <button class="btn btn-outline" onclick="fetchFriends(true)" style="margin-top:6px;font-size:13px;padding:10px;">🔄 更新（開くたびに読み込み直します）</button>
+      <div id="friendListStatus" style="font-size:11px;color:var(--text-sub);margin-top:6px;"></div>
+    </div>
   </div>
 </div>
 
@@ -1002,34 +1030,6 @@ body {
     <div class="app-title serif">宿場一覧</div>
   </div>
   <div id="stationsList"></div>
-</div>
-
-<!-- Page: 全伊能 -->
-<div class="page" id="pageAllIno">
-  <div class="app-header">
-    <div class="app-title serif">全伊能</div>
-  </div>
-
-  <div class="card">
-    <div class="input-label">地図上の表示</div>
-    <div style="display:flex;gap:16px;margin-bottom:10px;font-size:13px;">
-      <label style="display:flex;align-items:center;gap:4px;"><input type="radio" name="friendMode" value="selected" onchange="setFriendMode('selected')"> 友達だけ</label>
-      <label style="display:flex;align-items:center;gap:4px;"><input type="radio" name="friendMode" value="all" onchange="setFriendMode('all')"> 全伊能</label>
-    </div>
-    <div id="allinoMapContainer" style="height:340px;border-radius:12px;overflow:hidden;"></div>
-    <button class="btn btn-outline" onclick="fetchFriends(true)" style="margin-top:10px;font-size:13px;padding:10px;">🔄 更新（開くたびに読み込み直します）</button>
-    <div id="friendListStatus" style="font-size:11px;color:var(--text-sub);margin-top:6px;"></div>
-  </div>
-
-  <div class="card">
-    <div class="input-label">友達の伊能さん番号を追加</div>
-    <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px;">
-      <input type="text" class="input-number" id="friendAddInput" placeholder="1234" inputmode="numeric" style="flex:1;">
-      <button class="btn btn-secondary" onclick="addFriendByNumber()" style="width:auto;padding:10px 16px;font-size:13px;">追加</button>
-    </div>
-    <div id="friendWatchStatus" style="font-size:12px;color:var(--accent2);margin-bottom:10px;"></div>
-    <div id="friendWatchList" style="margin-bottom:4px;"></div>
-  </div>
 </div>
 
 <!-- Page: Settings -->
@@ -1146,9 +1146,6 @@ body {
   </div>
   <div class="tab-item" onclick="switchTab('stations')">
     <span class="tab-icon">🏮</span>宿場
-  </div>
-  <div class="tab-item tab-disabled" id="tabAllIno" onclick="switchTab('allino')">
-    <span class="tab-icon">👥</span>全伊能
   </div>
   <div class="tab-item" onclick="switchTab('settings')">
     <span class="tab-icon">⚙️</span>設定
@@ -1756,9 +1753,9 @@ const FRIEND_CACHE_KEY = 'inowalk_friendCache';
 const ALLINO_ENABLED_KEY = 'inowalk_allinoEnabled';
 
 let friendsCache = [];       // GASから取得した全員分 [{id,name,totalDist,updatedAt}]
-let friendMarkers = [];      // みんないのう地図上の友達マーカー
+let friendMarkers = [];      // 地図上の友達マーカー（全伊能モード時）
 let friendSendTimer = null;
-let allinoMap = null;        // みんないのう専用のLeaflet地図（本体の進捗地図とは別インスタンス）
+let mapMode = 'mine';        // 地図タブの表示モード：'mine'（マイ伊能）| 'allino'（全伊能）。本体の進捗地図と同じmapインスタンスを共用する
 
 function getAllinoEnabled() {
   try { return localStorage.getItem(ALLINO_ENABLED_KEY) === '1'; } catch(e) { return false; }
@@ -1767,16 +1764,14 @@ function getAllinoEnabled() {
 // トグルON/OFF：ONにした瞬間だけ番号を新規発行する。OFFにしても既発行の番号は消さない（また戻しても分裂しない）
 function toggleAllinoEnabled(checked) {
   try { localStorage.setItem(ALLINO_ENABLED_KEY, checked ? '1' : '0'); } catch(e) {}
-  const tab = document.getElementById('tabAllIno');
   const statusEl = document.getElementById('allinoToggleStatus');
   if (checked) {
     ensureFriendId();
-    if (tab) tab.classList.remove('tab-disabled');
-    if (statusEl) statusEl.textContent = `あなたの番号：${getFriendId()}（「全伊能」タブから確認できます）`;
+    if (statusEl) statusEl.textContent = `あなたの番号：${getFriendId()}（「地図」タブの全伊能モードから確認できます）`;
     scheduleSendMyPosition(true);
   } else {
-    if (tab) tab.classList.add('tab-disabled');
     if (statusEl) statusEl.textContent = '';
+    if (mapMode === 'allino') mapMode = 'mine'; // 機能OFFにしたら地図も自動でマイ伊能表示に戻す
   }
 }
 
@@ -1980,19 +1975,32 @@ function getFriendIcon(name, id) {
   });
 }
 
-// みんないのう専用の地図を初期化（本体の進捗地図=mapとは別インスタンス）
-function initAllinoMap() {
-  if (allinoMap) return;
-  allinoMap = L.map('allinoMapContainer').setView([36.5, 138], 5);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© OpenStreetMap contributors',
-    maxZoom: 18
-  }).addTo(allinoMap);
+// 地図タブ：マイ伊能／全伊能のモード切替（同じmapインスタンスを共用）
+function switchMapMode(mode) {
+  mapMode = mode;
+  updateMapModeUI();
+  if (mode === 'mine') {
+    friendMarkers.forEach(m => map.removeLayer(m));
+    friendMarkers = [];
+    updateMap();
+  } else {
+    markers.forEach(m => map.removeLayer(m));
+    markers = [];
+    fetchFriends(); // 開くたびにスプレッドシートを読み直す（プッシュ不要）
+  }
+}
+
+function updateMapModeUI() {
+  document.querySelectorAll('.map-mode-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === mapMode));
+  const legend = document.getElementById('mapLegend');
+  const allinoControls = document.getElementById('allinoControls');
+  if (legend) legend.style.display = mapMode === 'mine' ? 'flex' : 'none';
+  if (allinoControls) allinoControls.style.display = mapMode === 'allino' ? 'block' : 'none';
 }
 
 function renderFriendsOnMap() {
-  if (!allinoMap) return;
-  friendMarkers.forEach(m => allinoMap.removeLayer(m));
+  if (!map || mapMode !== 'allino') return;
+  friendMarkers.forEach(m => map.removeLayer(m));
   friendMarkers = [];
 
   // マイ伊能さん（自分）は常に表示。本体の進捗マーカーと同じアイコンを使う
@@ -2000,7 +2008,7 @@ function renderFriendsOnMap() {
   if (c.totalDist || c.totalDist === 0) {
     const selfPos = getLatLngForTotalDist(c.totalDist);
     if (selfPos) {
-      const selfMarker = L.marker([selfPos.lat, selfPos.lng], { icon: getInouIcon() }).addTo(allinoMap);
+      const selfMarker = L.marker([selfPos.lat, selfPos.lng], { icon: getInouIcon() }).addTo(map);
       const selfName = getFriendName();
       selfMarker.bindPopup(`<div style="font-size:12px;"><strong>マイ伊能さん${selfName ? '（' + selfName + '）' : ''}</strong></div>`);
       friendMarkers.push(selfMarker);
@@ -2018,7 +2026,7 @@ function renderFriendsOnMap() {
   list.forEach(f => {
     const pos = getLatLngForTotalDist(f.totalDist);
     if (!pos) return;
-    const marker = L.marker([pos.lat, pos.lng], { icon: getFriendIcon(f.name, f.id) }).addTo(allinoMap);
+    const marker = L.marker([pos.lat, pos.lng], { icon: getFriendIcon(f.name, f.id) }).addTo(map);
     // タップで即・非表示（確認なし。また番号を入れれば復活する）
     marker.on('click', () => hideFriend(f.id));
     friendMarkers.push(marker);
@@ -2198,25 +2206,29 @@ function closeModal(e) {
 // NAVIGATION
 // ============================================================
 function switchTab(tab) {
-  if (tab === 'allino' && !getAllinoEnabled()) return; // 未有効時はタブ無効（CSSでも押せないが念のため）
-
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
   
-  const tabMap = { home: 0, map: 1, stations: 2, allino: 3, settings: 4 };
+  const tabMap = { home: 0, map: 1, stations: 2, settings: 3 };
   document.querySelectorAll('.tab-item')[tabMap[tab]].classList.add('active');
   
   if (tab === 'home') {
     document.getElementById('pageHome').classList.add('active');
   } else if (tab === 'map') {
     document.getElementById('pageMap').classList.add('active');
-    setTimeout(() => { initMap(); map.invalidateSize(); updateMap(); }, 100);
+    const toggleEl = document.getElementById('mapModeToggle');
+    const enabled = getAllinoEnabled();
+    if (toggleEl) toggleEl.style.display = enabled ? 'flex' : 'none';
+    if (!enabled && mapMode === 'allino') mapMode = 'mine'; // 機能OFFなら強制的にマイ伊能表示に戻す
+    setTimeout(() => {
+      initMap();
+      map.invalidateSize();
+      if (mapMode === 'allino') { fetchFriends(); } else { updateMap(); }
+      updateMapModeUI();
+    }, 100);
   } else if (tab === 'stations') {
     document.getElementById('pageStations').classList.add('active');
     renderStationsList();
-  } else if (tab === 'allino') {
-    document.getElementById('pageAllIno').classList.add('active');
-    setTimeout(() => { initAllinoMap(); allinoMap.invalidateSize(); fetchFriends(); }, 100);
   } else if (tab === 'settings') {
     document.getElementById('pageSettings').classList.add('active');
     showSettings();
@@ -2389,7 +2401,7 @@ function showSettings() {
   const allinoStatus = document.getElementById('allinoToggleStatus');
   const enabled = getAllinoEnabled();
   if (allinoToggle) allinoToggle.checked = enabled;
-  if (allinoStatus) allinoStatus.textContent = enabled ? `あなたの番号：${getFriendId()}（「全伊能」タブから確認できます）` : '';
+  if (allinoStatus) allinoStatus.textContent = enabled ? `あなたの番号：${getFriendId()}（「地図」タブの全伊能モードから確認できます）` : '';
 
   // Bookmark URL
   document.getElementById('bookmarkUrl').value = buildUrl();
@@ -2537,10 +2549,6 @@ function resetAll() {
 async function init() {
   loadState();
   try { friendsCache = JSON.parse(localStorage.getItem(FRIEND_CACHE_KEY) || '[]'); } catch(e) {}
-  if (getAllinoEnabled()) {
-    const tab = document.getElementById('tabAllIno');
-    if (tab) tab.classList.remove('tab-disabled');
-  }
   await loadData();
   loadDiary(); // 日記データを非同期で読み込み（完了を待たない）
   
