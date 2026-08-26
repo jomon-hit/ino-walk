@@ -1106,7 +1106,7 @@ body {
       <div id="friendIdOverrideBox" style="display:none;margin-top:8px;">
         <p style="font-size:11px;color:var(--text-sub);text-align:left;margin-bottom:6px;">好きな4桁番号を入力してください。先に同じ番号を使っている人がいたら、別の組み合わせで試してね。</p>
         <div style="display:flex;gap:8px;align-items:center;">
-          <input type="text" class="input-number" id="friendIdOverrideInput" placeholder="1414" inputmode="numeric" style="flex:1;">
+          <input type="text" class="input-number" id="friendIdOverrideInput" placeholder="－－－－" inputmode="numeric" style="flex:1;">
           <button class="btn btn-secondary" onclick="overrideFriendId()" style="width:auto;padding:10px 16px;font-size:13px;">変更</button>
         </div>
       </div>
@@ -1114,7 +1114,7 @@ body {
 
     <div class="input-label" style="margin-top:12px;">マイ伊能さんの表示名（省略可・重複OK）</div>
     <div style="display:flex;gap:8px;align-items:center;margin-bottom:4px;">
-      <input type="text" class="input-number" id="friendNameInput" placeholder="令和の伊能忠敬" style="flex:1;">
+      <input type="text" class="input-number" id="friendNameInput" placeholder="" style="flex:1;">
       <button class="btn btn-secondary" onclick="saveFriendNameFromInput()" style="width:auto;padding:10px 16px;font-size:13px;">保存</button>
     </div>
 
@@ -1763,11 +1763,14 @@ const FRIEND_MODE_KEY = 'inowalk_friendMode'; // 'all' | 'selected'
 const FRIEND_WATCH_KEY = 'inowalk_friendWatch'; // { "1234": true, "6789": false }
 const FRIEND_CACHE_KEY = 'inowalk_friendCache';
 const ALLINO_ENABLED_KEY = 'inowalk_allinoEnabled';
+const MAP_MODE_KEY = 'inowalk_mapMode'; // 'mine' | 'allino'（地図タブを閉じる前に見ていたモードを次回も引き継ぐ）
 
 let friendsCache = [];       // GASから取得した全員分 [{id,name,totalDist,updatedAt}]
 let friendMarkers = [];      // 地図上の友達マーカー（全伊能モード時）
 let friendSendTimer = null;
-let mapMode = 'mine';        // 地図タブの表示モード：'mine'（マイ伊能）| 'allino'（全伊能）。本体の進捗地図と同じmapインスタンスを共用する
+let mapMode = (function() {
+  try { return localStorage.getItem(MAP_MODE_KEY) || 'mine'; } catch(e) { return 'mine'; }
+})();        // 地図タブの表示モード：'mine'（マイ伊能）| 'allino'（全伊能）。本体の進捗地図と同じmapインスタンスを共用する
 
 function getAllinoEnabled() {
   try { return localStorage.getItem(ALLINO_ENABLED_KEY) === '1'; } catch(e) { return false; }
@@ -1783,7 +1786,7 @@ function toggleAllinoEnabled(checked) {
     scheduleSendMyPosition(true);
   } else {
     if (statusEl) statusEl.textContent = '';
-    if (mapMode === 'allino') mapMode = 'mine'; // 機能OFFにしたら地図も自動でマイ伊能表示に戻す
+    if (mapMode === 'allino') { mapMode = 'mine'; try { localStorage.setItem(MAP_MODE_KEY, 'mine'); } catch(e) {} } // 機能OFFにしたら地図も自動でマイ伊能表示に戻す
   }
 }
 
@@ -1807,8 +1810,8 @@ function toggleFriendIdOverride() {
 }
 function overrideFriendId() {
   const raw = (document.getElementById('friendIdOverrideInput').value || '').trim();
-  if (!/^\d{3,5}$/.test(raw)) {
-    showToast('3〜5桁の数字を入力してください');
+  if (!/^\d{4}$/.test(raw)) {
+    showToast('4桁の数字を入力してください');
     return;
   }
   const oldId = getFriendId(); // リネーム用に古い番号を控えておく
@@ -1863,8 +1866,8 @@ function setFriendWatchFlag(id, flag) {
 function addFriendByNumber() {
   const raw = (document.getElementById('friendAddInput').value || '').trim();
   const statusEl = document.getElementById('friendWatchStatus');
-  if (!/^\d{3,5}$/.test(raw)) {
-    statusEl.textContent = '4桁くらいの番号を入力してください';
+  if (!/^\d{4}$/.test(raw)) {
+    statusEl.textContent = '4桁の番号を入力してください';
     return;
   }
   if (raw === getFriendId()) {
@@ -2008,6 +2011,7 @@ function getFriendIcon(name, id, speedMode) {
 // 地図タブ：マイ伊能／全伊能のモード切替（同じmapインスタンスを共用）
 function switchMapMode(mode) {
   mapMode = mode;
+  try { localStorage.setItem(MAP_MODE_KEY, mode); } catch(e) {}
   updateMapModeUI();
   if (mode === 'mine') {
     friendMarkers.forEach(m => map.removeLayer(m));
@@ -2249,7 +2253,7 @@ function switchTab(tab) {
     const toggleEl = document.getElementById('mapModeToggle');
     const enabled = getAllinoEnabled();
     if (toggleEl) toggleEl.style.display = enabled ? 'flex' : 'none';
-    if (!enabled && mapMode === 'allino') mapMode = 'mine'; // 機能OFFなら強制的にマイ伊能表示に戻す
+    if (!enabled && mapMode === 'allino') { mapMode = 'mine'; try { localStorage.setItem(MAP_MODE_KEY, 'mine'); } catch(e) {} } // 機能OFFなら強制的にマイ伊能表示に戻す
     setTimeout(() => {
       initMap();
       map.invalidateSize();
@@ -2432,6 +2436,8 @@ function showSettings() {
   const enabled = getAllinoEnabled();
   if (allinoToggle) allinoToggle.checked = enabled;
   if (allinoStatus) allinoStatus.textContent = enabled ? `あなたの番号：${getFriendId()}（「地図」タブの全伊能モードから確認できます）` : '';
+  const numEl = document.getElementById('myFriendNumber');
+  if (numEl) numEl.textContent = getFriendId() || '----';
   const nameInput = document.getElementById('friendNameInput');
   if (nameInput) nameInput.value = getFriendName();
   const curSpeedMode = getSpeedMode();
