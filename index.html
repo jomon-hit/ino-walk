@@ -561,6 +561,79 @@ body {
 .gallery-audio-btn.small.active {
   background: var(--accent); color:#fff; border-color: var(--accent);
 }
+/* ===== 北海道灯台スタンプラリー ===== */
+#srScreen{position:fixed;inset:0;z-index:1500;background:#d9c9a3;overflow-y:auto;display:none;-webkit-overflow-scrolling:touch;font-family:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif;color:#4a3320}
+#srScreen.show{display:block}
+#srScreen *{box-sizing:border-box}
+.sr-bar{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:8px;padding:calc(8px + env(safe-area-inset-top)) 12px 8px;background:#6b4e2e;color:#fff8e6}
+.sr-back{font:inherit;font-size:14px;font-weight:700;background:transparent;color:#fff8e6;border:1.5px solid rgba(255,248,230,.6);border-radius:16px;padding:5px 12px;cursor:pointer}
+.sr-ttl{font-size:15px;font-weight:700;letter-spacing:.04em}
+.sr-wrap{max-width:760px;margin:0 auto;padding:12px 12px calc(40px + env(safe-area-inset-bottom))}
+.sr-board{background:#f3e6c6;border:3px double #8a6a3f;border-radius:6px;box-shadow:0 6px 24px rgba(60,40,10,.35);position:relative;overflow:hidden}
+.sr-board svg{display:block;width:100%;height:auto}
+.sr-info{margin-top:10px;background:#fffaf0;border:1px solid #c9b383;border-radius:8px;padding:10px 12px;font-size:13px;line-height:1.7;min-height:64px}
+.sr-info b{font-size:15px}
+.sr-note{font-size:11px;color:#7a6548;line-height:1.7;margin-top:10px}
+.sr-stamp{cursor:pointer}
+.sr-ink{mix-blend-mode:multiply}
+.sr-pulse{animation:srpulse 1.5s ease-out infinite;transform-box:fill-box;transform-origin:center}
+@keyframes srpulse{0%{transform:scale(.92);opacity:.9}100%{transform:scale(1.4);opacity:0}}
+.sr-pop{animation:srpop .5s cubic-bezier(.2,1.5,.4,1);transform-box:fill-box;transform-origin:center}
+@keyframes srpop{0%{transform:scale(2.1);opacity:0}55%{opacity:1}100%{transform:scale(1)}}
+.sr-leg{margin-top:6px;display:flex;justify-content:center;gap:14px;font-size:11.5px;color:#5b4630}.sr-leg i{display:inline-block;width:11px;height:11px;border-radius:50%;margin-right:4px;vertical-align:-1px}
+.sr-hint{margin-top:10px;text-align:center;font-size:13px;color:#8a2a24;background:#fff3ee;border:1px solid #e3b0a8;border-radius:20px;padding:6px 10px}
+.sr-tabs{display:flex;gap:6px;margin-bottom:10px}
+.sr-tabs button{flex:1;font:inherit;font-weight:700;font-size:15px;padding:10px 6px;border:2px solid #8a6a3f;background:#f3e6c6;color:#6b4e2e;border-radius:8px;cursor:pointer}
+.sr-tabs button.act{background:#6b4e2e;color:#fff8e6}
+.sr-chead{text-align:center;margin:4px 0 10px}
+.sr-chead h2{margin:0 0 6px;font-size:20px;letter-spacing:.06em}
+.sr-cbar{height:14px;border-radius:8px;background:#fff8e6;border:1.5px solid #a88a58;overflow:hidden}
+.sr-cbar i{display:block;height:100%;background:linear-gradient(90deg,#d9604a,#c4302b);transition:width .3s}
+.sr-cgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.sr-ccell{background:#fffaf0;border:1.5px solid #c9b383;border-radius:10px;padding:5px 5px 6px}
+.sr-ccell.on{cursor:pointer}
+.sr-ccell.rdy{border:2px solid #c4302b;cursor:pointer;animation:srglow 1.6s ease-in-out infinite}
+@keyframes srglow{0%,100%{box-shadow:0 0 0 0 rgba(196,48,43,.35)}50%{box-shadow:0 0 0 5px rgba(196,48,43,0)}}
+.sr-nm{font-size:12px;font-weight:700;margin:0 0 4px 2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sr-ccell.off .sr-nm{color:#a89268}
+.sr-ccell.rdy .sr-nm{color:#c4302b}
+.sr-pic{position:relative;aspect-ratio:16/9;border-radius:6px;overflow:hidden}
+.sr-pic svg{width:100%;height:100%;display:block}
+.sr-tag{position:absolute;right:6px;bottom:6px;min-width:24px;height:24px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;padding:0 6px}
+.sr-tag.ok{background:#fff;border:2px solid #2f7fc1;width:24px;padding:0}
+.sr-tag.lk{background:#6b4e2e;width:24px;padding:0}
+.sr-tag.rd{background:#c4302b;color:#fff}
+.sr-cdone{display:none;margin:10px 0;padding:12px;text-align:center;border-radius:12px;background:linear-gradient(135deg,#fff3c4,#ffe08a);color:#6a4a00;font-weight:700;border:1.5px solid #e3b73a}
+.sr-cdone.show{display:block}
+#srCardOv{position:fixed;inset:0;background:rgba(40,25,10,.65);display:none;align-items:center;justify-content:center;z-index:2100;padding:16px;font-family:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif}
+#srCardOv.show{display:flex}
+.sr-card{width:min(300px,78vw);aspect-ratio:3/4.3;perspective:1000px;cursor:pointer}
+.sr-inner{position:relative;width:100%;height:100%;transition:transform .55s;transform-style:preserve-3d}
+.sr-card.flip .sr-inner{transform:rotateY(180deg)}
+.sr-face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:16px;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,.4);border:5px solid #fff}
+.sr-front{background:linear-gradient(#cfe8f7,#eaf6fc)}
+.sr-art{position:absolute;inset:0}
+.sr-art svg{width:100%;height:100%;display:block}
+.sr-front .sr-top{position:absolute;left:0;right:0;top:0;padding:10px 12px;display:flex;justify-content:space-between;align-items:center;font-size:12px;color:#17406b;font-weight:700;background:linear-gradient(rgba(255,255,255,.85),rgba(255,255,255,0))}
+.sr-front .sr-bot{position:absolute;left:0;right:0;bottom:0;padding:26px 12px 12px;background:linear-gradient(rgba(23,64,107,0),rgba(23,64,107,.88) 55%);color:#fff;text-align:center}
+.sr-front .sr-bot b{font-size:21px;letter-spacing:.06em;display:block}
+.sr-front .sr-bot span{font-size:11px;opacity:.85}
+.sr-back2{transform:rotateY(180deg);background:#f7fbfe;padding:16px;font-size:13px;line-height:1.55;overflow:auto;color:#17324d}
+.sr-back2 h3{margin:0 0 4px;font-size:17px;color:#17406b;border-bottom:2px solid #b9d6ea;padding-bottom:6px}
+.sr-yomi{margin:0 0 10px;font-size:12px;color:#6b8296;letter-spacing:.05em}
+.sr-back2 dl{margin:0;display:grid;grid-template-columns:5.2em 1fr;gap:4px 8px}
+.sr-back2 dt{color:#6b8296;font-size:12px}.sr-back2 dd{margin:0}
+.sr-ainu{margin-top:10px;font-size:12px;color:#17324d;background:#e9f4ec;border-left:4px solid #3f8f5f;border-radius:6px;padding:8px 10px;line-height:1.6}
+.sr-ainu b{display:block;font-size:11px;color:#2d6a45;margin-bottom:2px}
+.sr-ainu:empty{display:none}
+.sr-memo{margin-top:10px;font-size:11px;color:#6b8296;background:#eef5fa;border-radius:8px;padding:8px}
+.sr-chint{position:absolute;bottom:18px;left:0;right:0;text-align:center;color:#fff;font-size:12px}
+#srToast{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom));transform:translate(-50%,160px);background:#4a3320;color:#fff8e6;border-radius:30px;padding:10px 14px 10px 18px;font-size:13px;display:flex;align-items:center;gap:12px;z-index:2100;transition:transform .35s;box-shadow:0 6px 20px rgba(0,0,0,.35);width:max-content;max-width:92vw;font-family:"Noto Sans JP",sans-serif}
+#srToast.show{transform:translate(-50%,0)}
+#srToast button{white-space:nowrap;flex-shrink:0;font:inherit;font-size:12px;font-weight:700;background:#c4302b;color:#fff;border:0;border-radius:16px;padding:6px 12px;cursor:pointer}
+.sr-minibar{height:8px;border-radius:6px;background:var(--border);overflow:hidden;margin-top:8px}
+.sr-minibar i{display:block;height:100%;background:var(--accent);transition:width .3s}
+.sr-badge{display:inline-block;background:var(--accent);color:#fff;border-radius:10px;font-size:11px;font-weight:700;padding:1px 8px;margin-left:6px}
 </style>
 </head>
 <body>
@@ -697,6 +770,64 @@ body {
     </div>
   </div>
 </div>
+
+<!-- 北海道灯台スタンプラリー：はじめますか？ -->
+<div class="modal-overlay" id="srAskModal">
+  <div class="modal-content" style="padding:24px;">
+    <div style="font-size:17px;font-weight:900;margin-bottom:8px;">🏮 灯台スタンプラリーしますか？</div>
+    <div style="font-size:13px;color:var(--text-sub);line-height:1.7;margin-bottom:16px;">
+      北海道の灯台26基を、歩いて辿り着くたびにスタンプを押して集められます。スタンプを押した灯台は、カードが手に入ります。<br>
+      <span style="font-size:12px;">あとからでも「設定」や、ホームの小さなリンクからはじめられます。</span>
+    </div>
+    <div style="display:flex;gap:10px;">
+      <button class="btn btn-outline" style="flex:1;" onclick="srAnswer(false)">いまはしない</button>
+      <button class="btn btn-primary" style="flex:1;" onclick="srAnswer(true)">🏮 はじめる</button>
+    </div>
+  </div>
+</div>
+
+<!-- 北海道灯台スタンプラリー：台紙とカード集め -->
+<div id="srScreen">
+  <div class="sr-bar"><button class="sr-back" onclick="srClose()">‹ もどる</button><span class="sr-ttl">北海道灯台スタンプラリー</span></div>
+  <div class="sr-wrap">
+    <div class="sr-tabs">
+      <button id="srTabB" class="act" onclick="srSetTab('B')">スタンプ台紙</button>
+      <button id="srTabC" onclick="srSetTab('C')">カード集め</button>
+    </div>
+    <div id="srBoardView">
+      <div class="sr-board"><svg id="srSvg" viewBox="0 0 760 700" xmlns="http://www.w3.org/2000/svg"></svg></div>
+      <div class="sr-hint" id="srHint"></div>
+      <div class="sr-leg"><span><i style="background:#c4302b"></i>伊能が歩いた区間</span><span><i style="background:#2f6fb0"></i>歩いてない区間</span></div>
+      <div class="sr-info" id="srInfo">スタンプをタップすると、灯台の情報が出ます。</div>
+      <div class="sr-note">
+        ※ スタンプを押した灯台だけ、カードが手に入ります（到達しただけでは、カードは増えません）。押せるスタンプは、いつまでも押せます。<br>
+        ※ 海岸線は手描きの略図です（正確な地図ではありません）。灯台の位置も概略で、重なる所はずらして置き、引き出し線で本当の位置を示しています。<br>
+        ※ 灯台名・順路は海上保安庁「灯台カード」北海道の提供場所26基。初点灯年・高さ・灯質は資料から拾った値で、確認前のものを含みます。<br>
+        ※ 起点は青函トンネル北海道側の出口あたり（知内町）、反時計回りです。
+      </div>
+    </div>
+    <div id="srCardsView" style="display:none">
+      <div class="sr-chead"><h2>北海道灯台カード</h2>
+        <div style="font-weight:700;margin-bottom:6px"><span id="srCn">0</span> / 26枚 獲得</div>
+        <div class="sr-cbar"><i id="srCbar" style="width:0"></i></div></div>
+      <div class="sr-cdone" id="srCdone">北海道灯台踏破！ 26枚のカードがそろいました</div>
+      <div class="sr-cgrid" id="srCgrid"></div>
+      <div class="sr-note">
+        ※ カードの絵は仮のイラストです（実際の写真は、ライセンス確認後に差し替え）。<br>
+        ※ 到達した灯台は、スタンプ台紙でスタンプを押すとカードが手に入ります。押すまでは、いつまでも未獲得のままです。
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="srCardOv"><div class="sr-card" id="srCcard"><div class="sr-inner">
+  <div class="sr-face sr-front"><div class="sr-art" id="srArt"></div>
+    <div class="sr-top"><span id="srNo"></span><span>北海道灯台シリーズ</span></div>
+    <div class="sr-bot"><b id="srName"></b><span id="srLoc"></span></div></div>
+  <div class="sr-face sr-back2"><h3 id="srBName"></h3><div class="sr-yomi" id="srBYomi"></div><dl id="srBDl"></dl><div class="sr-ainu" id="srBAinu"></div><div class="sr-memo" id="srBMemo"></div></div>
+</div></div><div class="sr-chint">タップで裏返す／外側をタップで閉じる</div></div>
+
+<div id="srToast"><span id="srToastTxt"></span><button id="srToastBtn">カードを見る</button></div>
 
 <!-- 到着日の編集 -->
 <div class="modal-overlay" id="editArrivalModal" onclick="closeEditArrival(event)">
@@ -899,6 +1030,15 @@ body {
     </div>
   </div>
 
+  <!-- 北海道灯台スタンプラリー（ホームのカード） -->
+  <div class="card current-station-link" id="srHomeCard" style="display:none;" onclick="srOpen()">
+    <div class="card-title" style="margin-bottom:6px;"><span class="icon">🏮</span> 北海道灯台スタンプラリー <span style="margin-left:auto;font-size:16px;">›</span></div>
+    <div id="srHomeBody" style="font-size:13px;"></div>
+  </div>
+  <div id="srHomeLink" style="display:none;text-align:center;margin:-4px 0 12px;">
+    <span onclick="srStartFromHome()" style="font-size:12px;color:var(--text-sub);text-decoration:underline;cursor:pointer;">灯台スタンプラリーをはじめる</span>
+  </div>
+
   <!-- Stats -->
   <div class="card">
     <div class="card-title"><span class="icon">🚶</span> 基本スタッツ</div>
@@ -1080,6 +1220,20 @@ body {
   <div class="card">
     <div class="card-title"><span class="icon">📋</span> 到着記録</div>
     <div id="settArrivalLog"></div>
+  </div>
+  <div class="card">
+    <div class="card-title"><span class="icon">🏮</span> 北海道灯台スタンプラリー</div>
+    <p style="font-size:12px;color:var(--text-sub);margin-bottom:10px;">
+      北海道の灯台26基を、歩いて到達したらスタンプを押して集める遊びです。やめても、押したスタンプの記録は消えません。
+    </p>
+    <div style="display:flex;align-items:center;justify-content:space-between;background:var(--bg);border-radius:8px;padding:12px;">
+      <span style="font-size:14px;font-weight:600;">灯台スタンプラリー</span>
+      <label class="switch">
+        <input type="checkbox" id="srToggle" onchange="srToggleEnabled(this.checked)">
+        <span class="switch-slider"></span>
+      </label>
+    </div>
+    <p id="srToggleStatus" style="font-size:11px;color:var(--text-sub);margin-top:6px;"></p>
   </div>
   <div class="card">
     <div class="card-title"><span class="icon">👥</span> 全伊能（みんないのう）さん</div>
@@ -1417,6 +1571,7 @@ function readUrlParams() {
         if (pref && date) state.arrivals[pref] = date;
       });
     }
+    if (state.start && typeof srApplyFromParams === 'function') srApplyFromParams(p); // 灯台スタンプラリー
     return !!state.start; // URLにデータがあったか
   } catch(e) {
     console.log('URL params not available (local file mode)');
@@ -1482,6 +1637,7 @@ function buildUrl() {
   const arr = Object.entries(state.arrivals)
     .map(([k,v]) => `${k}:${v}`).join(',');
   if (arr) p.set('a', arr);
+  if (typeof srAppendToParams === 'function') srAppendToParams(p); // 灯台スタンプラリー
   try {
     const base = window.location.origin !== 'null' 
       ? window.location.origin + window.location.pathname 
@@ -1701,6 +1857,7 @@ function updateDashboard() {
   
   // Current station link
   document.getElementById('currentStationCard').style.display = c.currentStation ? 'block' : 'none';
+  if (typeof srRefresh === 'function') srRefresh(); // 灯台スタンプラリー
 }
 
 function populatePrefSelect(selectId) {
@@ -2468,6 +2625,7 @@ function showSettings() {
 
   // Bookmark URL
   document.getElementById('bookmarkUrl').value = buildUrl();
+  if (typeof srRefresh === 'function') srRefresh(); // 灯台スタンプラリーのトグル反映
 }
 
 function saveStartDate() {
@@ -2582,6 +2740,7 @@ function showRestoreSetup() {
         if (pref && date) state.arrivals[pref] = date;
       });
     }
+    if (typeof srApplyFromParams === 'function') srApplyFromParams(p); // 灯台スタンプラリー
     saveState();
 // ✅ enterApp() がタブバー表示もやってくれる
     const box = document.getElementById('restoreBox');
@@ -3014,11 +3173,16 @@ function getPrefNumber(prefRaw) {
   return String(idx + 1).padStart(2, '0');
 }
 
-// 県別BGMの曲数（曲を追加したらここの数字を増やすだけでOK）
-// 例: 02.mp3, 02-2.mp3, 02-3.mp3 の3曲（千葉=02番）なら '02':3
-const PREF_BGM_COUNT = {
-  '02': 3, // 千葉
-  '03': 3  // 茨城
+// 県別BGMのファイル名一覧（曲を追加したら、ここに拡張子なしのファイル名を足すだけでOK）
+// ファイル名が 04-1 / 04-3 のように飛んでいても、実際にあるものを書けば鳴る
+const PREF_BGM_FILES = {
+  '02': ['02', '02-2', '02-3'],   // 千葉
+  '03': ['03', '03-2', '03-3'],   // 茨城
+  '04': ['04', '04-1', '04-3'],
+  '05': ['05', '05-1'],
+  '06': ['06', '06-1'],
+  '07': ['07', '07-1', '07-3'],
+  '08': ['08', '08-1', '08-2']
 };
 
 // 末尾の数字（半角1/2・全角１/２）を取り除いた「実際の県名」を返す
@@ -3145,29 +3309,18 @@ function stopGalleryAudio() {
 }
 
 // そのprefで再生可能な曲URLを全部返す（東京は出発専用の1曲のみ）
-// mainThemeの曲数（増やしたらここの数字を変えるだけでOK）
-// 例: mainTheme.mp3, mainTheme-2.mp3, mainTheme-3.mp3 の3曲なら 3
-const DEFAULT_BGM_COUNT = 1;
+// 県専用の曲が無い時に流す曲（ファイル名を拡張子なしで並べる）
+const DEFAULT_BGM_FILES = ['mainTheme', 'mainTheme1'];
 
 function getDefaultTrackUrls() {
-  const urls = [];
-  for (let i = 1; i <= DEFAULT_BGM_COUNT; i++) {
-    urls.push(i === 1 ? 'sounds/mainTheme.mp3' : `sounds/mainTheme-${i}.mp3`);
-  }
-  return urls;
+  return DEFAULT_BGM_FILES.map(f => `sounds/${f}.mp3`);
 }
 
 function getPrefTrackUrls(prefRaw) {
   if (prefRaw === '東京') return ['sounds/Start.mp3'];
   const num = getPrefNumber(prefRaw);
-  const count = num ? (PREF_BGM_COUNT[num] || 0) : 0;
-  if (count > 0) {
-    const urls = [];
-    for (let i = 1; i <= count; i++) {
-      urls.push(i === 1 ? `sounds/${num}.mp3` : `sounds/${num}-${i}.mp3`);
-    }
-    return urls;
-  }
+  const files = num ? PREF_BGM_FILES[num] : null;
+  if (files && files.length) return files.map(f => `sounds/${f}.mp3`);
   return getDefaultTrackUrls();
 }
 
@@ -3478,6 +3631,435 @@ function showUpdateBanner() {
   banner.onclick = () => location.reload();
   document.body.appendChild(banner);
 }
+
+// ============================================================
+// 北海道灯台スタンプラリー
+// ============================================================
+// 保存キー 'inowalk_stampRally' // {enabled, asked, pressed:{HK01:'2026-11-16'}} ※歩行記録(LS_KEY)とは別保存
+const SR_L=[
+["葛登支岬","北斗市茂辺地",140.563,41.787,"1885","16m","白・6秒点灯4秒消灯","ibiblio（設置年のみ）"],
+["恵山岬","函館市恵山岬町",141.182,41.801,"1890（明治23年11月1日）","18.85m","白・3秒点灯3秒消灯","戦後1949復旧、1989改築"],
+["チキウ岬","室蘭市母恋南町",140.979,42.312,"1920（大正9年4月1日）","15m","白2閃光・毎30秒","八角形の塔"],
+["襟裳岬","幌泉郡えりも町",143.248,41.922,"1889（明治22年6月25日）","13.7m","白閃光・毎15秒","戦後1950再建"],
+["湯沸岬","厚岸郡浜中町",145.117,43.094,"1930（現行塔の完成年）","12m","白閃光・毎5秒","初点灯年は記載なし"],
+["落石岬","根室市落石西",145.494,43.222,"1890（明治23年10月15日）","14.9m","白閃光・毎8秒",""],
+["花咲","根室市花咲",145.582,43.283,"1890（明治23年11月1日）","10m","白・6秒点灯2秒消灯","四角柱の塔"],
+["納沙布岬","根室市納沙布",145.816,43.385,"1872（明治5年）","13.5m","等明暗 白赤・周期4秒","資料により年が食い違うため要確認"],
+["ノッカマップ埼","根室市",145.680,43.370,"不明","11m","白2閃光・毎10秒","八角形の塔"],
+["野付埼","野付郡別海町",145.300,43.580,"1953（現行塔の完成年）","12m","白・3秒点灯3秒消灯",""],
+["羅臼","目梨郡羅臼町",145.190,44.020,"1971（現行塔の完成年）","16m","白閃光・毎10秒",""],
+["宇登呂","斜里郡斜里町",144.987,44.074,"1969（現行塔の完成年）","20m","白閃光・毎15秒",""],
+["能取岬","網走市美岬",144.103,44.115,"1917（現行塔の完成年）","21m","白閃光・毎8秒",""],
+["紋別","紋別市花園町",143.358,44.353,"1960（現行塔の完成年）","13m","白閃光・毎10秒",""],
+["宗谷岬","稚内市宗谷岬",141.937,45.523,"1885（明治18年9月25日）","17m","白4閃光・毎30秒","日本最北端の灯台"],
+["稚内","稚内市ノシャップ",141.636,45.457,"1900（明治33年12月10日）","42.7m","白2閃光・毎20秒","道内で一番高い灯台"],
+["沓形岬","利尻郡利尻町",141.134,45.172,"1952","12m","白・3秒点灯3秒消灯","島の灯台（利尻島）"],
+["金比羅岬","苫前郡初山別村",141.760,44.520,"1969（現行塔の完成年）","12m","白閃光・毎4秒",""],
+["増毛","増毛郡増毛町",141.526,43.857,"1890","12m","赤白交互閃光・毎16秒","白い塔に赤い帯が1本"],
+["石狩","石狩市浜町",141.361,43.257,"1892（明治25年1月1日）","13.5m","不明","現存する道内最古の灯台。高さは要確認"],
+["日和山","小樽市祝津",140.965,43.213,"1883（明治16年10月15日）","不明","不明","初代は木造六角形。1953年に改築"],
+["神威岬","積丹郡積丹町",140.353,43.330,"1888（現行塔1960）","11m","白閃光・毎15秒","塔高は資料により食い違い、要確認"],
+["弁慶岬","寿都郡寿都町",140.205,42.795,"1890","13m","白閃光・毎8秒",""],
+["茂津多岬","島牧郡島牧村",139.990,42.520,"1937（昭和12年4月11日）","18m","白2閃光・毎24秒","灯頂の標高は日本一"],
+["稲穂岬","奥尻郡奥尻町",139.470,42.150,"1891（現行塔は約1970年）","17m","白閃光・毎15秒","島の灯台（奥尻島）"],
+["鴎島","檜山郡江差町",140.127,41.871,"1889","10m","白3閃光・毎13秒",""]
+];;
+const SR_R=["かっとしみさき", "えさんみさき", "ちきうみさき", "えりもみさき", "とうふつみさき", "おちいしみさき", "はなさき", "のさっぷみさき", "のっかまっぷさき", "のつけさき", "らうす", "うとろ", "のとろみさき", "もんべつ", "そうやみさき", "わっかない", "くつがたみさき", "こんぴらみさき", "ましけ", "いしかり", "ひよりやま", "かむいみさき", "べんけいみさき", "もったみさき", "いなほみさき", "かもめしま"];
+const SR_COAST=[[141.94,45.52],[142.17,45.36],[142.37,45.13],[142.55,44.97],[142.85,44.72],[143.1,44.5],[143.36,44.35],[143.6,44.25],[143.95,44.15],[144.1,44.12],[144.28,44.0],[144.45,43.93],[144.67,43.92],[144.9,44.02],[145.0,44.08],[145.2,44.25],[145.33,44.35],[145.2,44.1],[145.19,44.02],[145.15,43.85],[145.1,43.65],[145.3,43.56],[145.25,43.45],[145.35,43.38],[145.5,43.35],[145.6,43.37],[145.7,43.38],[145.82,43.39],[145.7,43.33],[145.58,43.28],[145.49,43.22],[145.3,43.15],[145.12,43.09],[144.85,43.05],[144.38,42.97],[143.93,42.95],[143.65,42.75],[143.4,42.4],[143.32,42.28],[143.25,41.92],[143.0,42.1],[142.78,42.16],[142.4,42.3],[142.0,42.47],[141.62,42.63],[141.35,42.5],[141.1,42.4],[140.98,42.31],[140.87,42.47],[140.7,42.57],[140.37,42.57],[140.3,42.25],[140.58,42.1],[140.8,42.03],[141.0,41.9],[141.18,41.8],[141.12,41.73],[140.95,41.72],[140.73,41.77],[140.65,41.8],[140.43,41.68],[140.38,41.5],[140.25,41.47],[140.2,41.4],[140.1,41.45],[140.1,41.65],[140.12,41.87],[140.1,41.97],[140.05,42.1],[139.97,42.25],[139.95,42.4],[139.99,42.52],[140.0,42.7],[140.22,42.8],[140.5,42.98],[140.42,43.2],[140.35,43.33],[140.47,43.37],[140.7,43.3],[140.9,43.2],[141.0,43.2],[141.3,43.22],[141.45,43.4],[141.4,43.6],[141.53,43.86],[141.65,43.94],[141.7,44.2],[141.76,44.52],[141.78,44.8],[141.75,45.0],[141.72,45.25],[141.64,45.46],[141.8,45.5]];
+const SR_S=['w','w','w','w','rw','rw','rw','w','bw','w','rw','w','w','w','rw','rw','rw','rw','rw','rw','rw','bw','rw','bw','bw','w'];
+function srLh(style,sil,id){
+  const c=sil?{sky1:"#d3dee7",sky2:"#e6edf2",sea:"#b9c8d4",land:"#c6d2db",tw:"#9fb0bd",rd:"#8fa2b0",bk:"#7f93a2",gl:"#c9d6df",ro:"#7b8e9c"}
+             :{sky1:"#8ccaf0",sky2:"#e4f4fc",sea:"#2f78b3",land:"#6faa72",tw:"#ffffff",rd:"#d6392f",bk:"#2a2f36",gl:"#d9f0fb",ro:"#2e4a66"};
+  const band=style==="rw"?c.rd:style==="bw"?c.bk:null;
+  let bands="";
+  if(band){bands=`<polygon points="41.6,46 58.4,46 59.2,54 40.8,54" fill="${band}"/><polygon points="40.4,62 59.6,62 60.4,70 39.6,70" fill="${band}"/>`;}
+  return `<svg viewBox="0 0 160 90" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+  <defs><linearGradient id="srg${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${c.sky1}"/><stop offset="1" stop-color="${c.sky2}"/></linearGradient></defs>
+  <rect width="160" height="90" fill="url(#srg${id})"/>
+  <rect y="64" width="160" height="26" fill="${c.sea}"/>
+  <path d="M0 70 Q40 62 78 70 T160 68 V90 H0Z" fill="${c.land}"/>
+  <g transform="translate(30,0)">
+  <polygon points="42,28 58,28 61,74 39,74" fill="${c.tw}" stroke="${sil?c.tw:"#cfd9e0"}" stroke-width=".6"/>
+  ${bands}
+  <rect x="38" y="25" width="24" height="3.4" fill="${c.ro}"/>
+  <rect x="43.5" y="14" width="13" height="11" fill="${c.gl}" stroke="${c.ro}" stroke-width="1.2"/>
+  <polygon points="41.5,14 50,6 58.5,14" fill="${c.ro}"/>
+  <rect x="36" y="74" width="28" height="4" fill="${sil?c.tw:"#eef2f5"}"/>
+  </g>
+  </svg>`;
+}
+
+function srIcon(c){return `<g fill="${c}"><polygon points="-3.2,-6 3.2,-6 4.4,8 -4.4,8"/><rect x="-5" y="-8" width="10" height="2.4"/><rect x="-2.6" y="-13" width="5.2" height="5" /><polygon points="-3.6,-13 0,-17 3.6,-13"/></g>`}
+
+// 各灯台に到達する「北海道を歩き終えた割合」（反時計回りの海岸線に沿った道のりの割合）。仮の値。ルート確定後に調整できる。
+const SR_FR = [0.019, 0.047, 0.143, 0.255, 0.372, 0.389, 0.394, 0.406, 0.412, 0.439, 0.469, 0.51, 0.553, 0.587, 0.677, 0.69, 0.704, 0.744, 0.784, 0.82, 0.837, 0.865, 0.902, 0.923, 0.938, 0.961];
+var srData; // ※varで宣言（init()がこのスクリプトの下より先に呼ばれても安全なように）
+let srBuilt = false, srTab = 'B', srLast = -1, srAskTimer = null, srToastIdx = -1, srToastTimer = null;
+const srPad = n => String(n).padStart(2, '0');
+const srId = i => 'HK' + srPad(i + 1);
+
+function srLoad() {
+  if (srData) return srData;
+  srData = { enabled: false, asked: false, pressed: {} };
+  try {
+    const o = JSON.parse(localStorage.getItem('inowalk_stampRally') || 'null');
+    if (o) { srData.enabled = !!o.enabled; srData.asked = !!o.asked; srData.pressed = o.pressed || {}; }
+  } catch (e) {}
+  return srData;
+}
+function srSave() { try { localStorage.setItem('inowalk_stampRally', JSON.stringify(srData)); } catch (e) {} }
+
+// 北海道の位置：-1=まだ北海道に着いてない 0〜1=北海道内の進み具合 2=北海道を過ぎた
+function srPosition() {
+  if (!state.start || !state.pref) return -1;
+  const hk = prefList.findIndex(p => getPrefBaseName(p) === '北海道');
+  const cur = prefList.indexOf(state.pref);
+  if (hk < 0 || cur < 0 || cur < hk) return -1;
+  if (cur > hk) return 2;
+  const c = calcProgress();
+  if (!c.prefDist) return 0;
+  return Math.min(Math.max((c.inPrefDist || 0) / c.prefDist, 0), 1);
+}
+function srReachCount() {
+  const p = srPosition();
+  if (p < 0) return 0;
+  if (p >= 2) return 26;
+  return SR_FR.filter(f => f <= p).length;
+}
+function srState(i) {
+  if (srLoad().pressed[srId(i)]) return 'done';
+  return i < srReachCount() ? 'ready' : 'locked';
+}
+function srPressedCount() { return Object.keys(srLoad().pressed).filter(k => /^HK\d\d$/.test(k)).length; }
+function srReadyCount() { let n = 0; for (let i = 0; i < 26; i++) if (srState(i) === 'ready') n++; return n; }
+function srDateLabel(iso) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso || '');
+  return m ? `${m[1]}年${+m[2]}月${+m[3]}日` : '';
+}
+
+// ---- バックアップURLへの出し入れ（sre=はじめてるか／srp=押印記録 例 01:2026-11-16,03:2026-11-20）----
+function srAppendToParams(p) {
+  const d = srLoad();
+  const ids = Object.keys(d.pressed).filter(k => /^HK\d\d$/.test(k)).sort();
+  if (!d.enabled && !d.asked && !ids.length) return; // 一度も触ってない人のURLは今まで通り
+  p.set('sre', d.enabled ? '1' : '0');
+  if (ids.length) p.set('srp', ids.map(k => `${k.slice(2)}:${d.pressed[k].replace(/-/g, '')}`).join(','));
+}
+function srApplyFromParams(p) {
+  if (p.get('sre') === null) return; // 古いURLは、いまの端末の記録をそのまま残す
+  const d = srLoad();
+  d.enabled = p.get('sre') === '1';
+  d.asked = true;
+  d.pressed = {};
+  (p.get('srp') || '').split(',').forEach(pair => {
+    const [n, dt] = pair.split(':');
+    if (/^\d\d$/.test(n) && /^\d{8}$/.test(dt || '')) d.pressed['HK' + n] = `${dt.slice(0, 4)}-${dt.slice(4, 6)}-${dt.slice(6, 8)}`;
+  });
+  srSave();
+}
+
+// ---- ホーム／設定への反映 ----
+function srRefresh() {
+  const d = srLoad();
+  const inHk = srPosition() >= 0 && srPosition() < 2;
+  const card = document.getElementById('srHomeCard');
+  const link = document.getElementById('srHomeLink');
+  if (card) {
+    card.style.display = d.enabled ? 'block' : 'none';
+    if (d.enabled) {
+      const n = srPressedCount(), r = srReadyCount();
+      document.getElementById('srHomeBody').innerHTML =
+        `<div>押印 <b>${n}</b> / 26基${r > 0 ? `<span class="sr-badge">押せるスタンプ ${r}</span>` : ''}</div>` +
+        `<div class="sr-minibar"><i style="width:${n / 26 * 100}%"></i></div>`;
+    }
+  }
+  if (link) link.style.display = (!d.enabled && inHk) ? 'block' : 'none';
+  const tg = document.getElementById('srToggle');
+  if (tg) tg.checked = d.enabled;
+  const st = document.getElementById('srToggleStatus');
+  if (st) st.textContent = d.enabled ? 'いま：はじめている（ホームにカードが出ています）' : 'いま：やめている';
+  srMaybeAsk();
+}
+
+// ---- 「はじめますか？」 ----
+function srMaybeAsk() {
+  const d = srLoad();
+  if (d.asked || srPosition() < 0) return;
+  if (srAskTimer) return;
+  srAskTimer = setTimeout(() => {
+    srAskTimer = null;
+    if (d.asked || srPosition() < 0) return;
+    if (document.querySelector('.modal-overlay.show') || document.getElementById('arrivalPopup')?.classList.contains('show')) { return; }
+    document.getElementById('srAskModal').classList.add('show');
+  }, 3200);
+}
+function srAnswer(yes) {
+  const d = srLoad();
+  d.asked = true; d.enabled = !!yes; srSave();
+  document.getElementById('srAskModal').classList.remove('show');
+  srRefresh();
+  if (yes) showToast('ホームにスタンプラリーのカードができたよ🏮', 3000);
+  else showToast('あとで「設定」からはじめられるよ', 3000);
+}
+function srToggleEnabled(on) {
+  const d = srLoad();
+  d.enabled = !!on; d.asked = true; srSave();
+  srRefresh();
+  if (on) showToast('スタンプラリーをはじめたよ🏮 ホームにカードが出ます', 3000);
+}
+function srStartFromHome() { srToggleEnabled(true); }
+
+// ---- 台紙 ----
+function srOpen() {
+  document.getElementById('srScreen').classList.add('show');
+  document.body.style.overflow = 'hidden';
+  if (!srBuilt) srBuild();
+  srSetTab('B');
+  srDraw();
+}
+function srClose() {
+  document.getElementById('srScreen').classList.remove('show');
+  document.getElementById('srCardOv').classList.remove('show');
+  document.getElementById('srToast').classList.remove('show');
+  document.body.style.overflow = '';
+  srRefresh();
+}
+function srSetTab(t) {
+  srTab = t;
+  document.getElementById('srBoardView').style.display = t === 'B' ? '' : 'none';
+  document.getElementById('srCardsView').style.display = t === 'C' ? '' : 'none';
+  document.getElementById('srTabB').classList.toggle('act', t === 'B');
+  document.getElementById('srTabC').classList.toggle('act', t === 'C');
+  document.getElementById('srScreen').scrollTop = 0;
+}
+
+const SR_SX = 94.25, SR_SY = 130, SR_OX = 40, SR_OY = 22, SR_LON0 = 139.3, SR_LAT0 = 46;
+const srpx = lon => SR_OX + (lon - SR_LON0) * SR_SX, srpy = lat => SR_OY + (SR_LAT0 - lat) * SR_SY;
+let SR_N = [];
+function srPathFrom(pts) {
+  const P = pts.map(p => [srpx(p[0]), srpy(p[1])]); const n = P.length;
+  let d = `M${P[0][0].toFixed(1)},${P[0][1].toFixed(1)}`;
+  for (let i = 0; i < n; i++) {
+    const p0 = P[(i - 1 + n) % n], p1 = P[i], p2 = P[(i + 1) % n], p3 = P[(i + 2) % n];
+    const c1 = [p1[0] + (p2[0] - p0[0]) / 8, p1[1] + (p2[1] - p0[1]) / 8], c2 = [p2[0] - (p3[0] - p1[0]) / 8, p2[1] - (p3[1] - p1[1]) / 8];
+    d += ` C${c1[0].toFixed(1)},${c1[1].toFixed(1)} ${c2[0].toFixed(1)},${c2[1].toFixed(1)} ${p2[0].toFixed(1)},${p2[1].toFixed(1)}`;
+  }
+  return d + 'Z';
+}
+function srBuild() {
+  srBuilt = true;
+  const coastD = srPathFrom(SR_COAST);
+  const isl = (cx, cy, rx, ry) => `<ellipse cx="${srpx(cx)}" cy="${srpy(cy)}" rx="${rx}" ry="${ry}"/>`;
+  const cc = [640, 560];
+  let h = `
+<defs>
+  <filter id="srpaper"><feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="2" seed="4" result="n"/>
+    <feColorMatrix type="matrix" values="0 0 0 0 .45  0 0 0 0 .33  0 0 0 0 .2  0 0 0 .09 0"/></filter>
+  <pattern id="srwave" width="26" height="14" patternUnits="userSpaceOnUse">
+    <path d="M0 8 Q6.5 2 13 8 T26 8" fill="none" stroke="#8aa3a3" stroke-width=".8" opacity=".35"/></pattern>
+  <radialGradient id="srvig" cx=".5" cy=".5" r=".75"><stop offset=".6" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#6b4a20" stop-opacity=".28"/></radialGradient>
+  <clipPath id="srframe"><rect x="14" y="14" width="732" height="672" rx="2"/></clipPath>
+</defs>
+<rect width="760" height="700" fill="#f3e6c6"/>
+<rect width="760" height="700" filter="url(#srpaper)"/>
+<g clip-path="url(#srframe)">
+  <rect x="14" y="14" width="732" height="672" fill="url(#srwave)"/>
+  <g stroke="#9b7e4e" stroke-width=".6" opacity=".35">`;
+  for (let a = 0; a < 32; a++) { const t = a * Math.PI / 16; h += `<line x1="${cc[0]}" y1="${cc[1]}" x2="${cc[0] + 900 * Math.cos(t)}" y2="${cc[1] + 900 * Math.sin(t)}"/>`; }
+  h += `</g>
+  <g fill="#f7efd6" stroke="#6b4e2e" stroke-linejoin="round">
+    <path d="${coastD}" fill="none" stroke="#9fbdbd" stroke-width="11" opacity=".45"/>
+    <path d="${coastD}" fill="none" stroke="#8aa3a3" stroke-width="5" opacity=".35" stroke-dasharray="1 5"/>
+    <path d="${coastD}" stroke-width="1.8"/>
+    <g stroke-width="1.6">${isl(141.24, 45.18, 15, 17)}${isl(139.48, 42.12, 9, 22)}</g>
+  </g>
+</g>
+<rect x="14" y="14" width="732" height="672" fill="none" stroke="#8a6a3f" stroke-width="2.5"/>
+<rect x="20" y="20" width="720" height="660" fill="none" stroke="#8a6a3f" stroke-width=".8"/>
+<rect width="760" height="700" fill="url(#srvig)" pointer-events="none"/>
+<g transform="translate(560,70)">
+  <rect x="-20" y="-24" width="190" height="112" fill="#f9f0d6" stroke="#8a6a3f" stroke-width="1.4"/>
+  <rect x="-15" y="-19" width="180" height="102" fill="none" stroke="#8a6a3f" stroke-width=".6"/>
+  <text x="75" y="8" text-anchor="middle" font-size="22" font-weight="700" letter-spacing="3" fill="#4a3320">北海道</text>
+  <text x="75" y="36" text-anchor="middle" font-size="19" font-weight="700" letter-spacing="2" fill="#4a3320">灯台スタンプ台紙</text>
+  <text x="75" y="62" text-anchor="middle" font-size="12" fill="#6b4e2e">歩いて集める 二十六の灯</text>
+  <text x="75" y="78" text-anchor="middle" font-size="11" fill="#6b4e2e" id="srCnt"></text>
+</g>
+<g transform="translate(${cc[0]},${cc[1]})">
+  <circle r="38" fill="#f9f0d6" stroke="#6b4e2e" stroke-width="1.4"/><circle r="30" fill="none" stroke="#6b4e2e" stroke-width=".7"/>
+  <polygon points="0,-34 6,0 0,34 -6,0" fill="#6b4e2e" opacity=".85"/><polygon points="-34,0 0,-6 34,0 0,6" fill="#6b4e2e" opacity=".55"/>
+  <polygon points="0,-34 6,0 -6,0" fill="#c4302b"/>
+  <text y="-42" text-anchor="middle" font-size="13" font-weight="700" fill="#4a3320">北</text>
+</g>
+<text x="40" y="668" font-size="11" fill="#6b4e2e">起点：知内町（青函トンネル北海道側）より反時計回り</text>
+<g id="srStart"></g><g id="srLead"></g><g id="srStamps"></g>`;
+  document.getElementById('srSvg').innerHTML = h;
+  const sx = srpx(140.38), sy = srpy(41.5);
+  document.getElementById('srStart').innerHTML = `<g transform="translate(${sx},${sy})"><circle r="4" fill="#2a6f4a"/><path d="M0,0 L0,-26" stroke="#2a6f4a" stroke-width="1.6"/><path d="M0,-26 L16,-21 L0,-16Z" fill="#2a6f4a"/></g><text x="${sx - 8}" y="${sy + 17}" font-size="11" text-anchor="end" fill="#2a6f4a" font-weight="700">起点</text>`;
+  // スタンプの配置（重なりをほぐす）
+  SR_N = SR_L.map((d, i) => ({ i, tx: srpx(d[2]), ty: srpy(d[3]), x: srpx(d[2]), y: srpy(d[3]) }));
+  const W = 64, H = 56;
+  for (let it = 0; it < 400; it++) {
+    for (let a = 0; a < SR_N.length; a++) for (let b = a + 1; b < SR_N.length; b++) {
+      const A = SR_N[a], B = SR_N[b]; const dx = B.x - A.x, dy = B.y - A.y; const ox = W - Math.abs(dx), oy = H - Math.abs(dy);
+      if (ox > 0 && oy > 0) {
+        if (ox < oy) { const s = dx === 0 ? (a % 2 ? 1 : -1) : Math.sign(dx); A.x -= s * ox / 2; B.x += s * ox / 2; }
+        else { const s = dy === 0 ? (a % 2 ? 1 : -1) : Math.sign(dy); A.y -= s * oy / 2; B.y += s * oy / 2; }
+      }
+    }
+    SR_N.forEach(n => { n.x += (n.tx - n.x) * 0.02; n.y += (n.ty - n.y) * 0.02; n.x = Math.max(46, Math.min(714, n.x)); n.y = Math.max(46, Math.min(640, n.y)); });
+  }
+  document.getElementById('srCcard').onclick = e => { e.stopPropagation(); e.currentTarget.classList.toggle('flip'); };
+  document.getElementById('srCardOv').onclick = () => document.getElementById('srCardOv').classList.remove('show');
+  document.getElementById('srToastBtn').onclick = () => { document.getElementById('srToast').classList.remove('show'); srOpenCard(srToastIdx); };
+}
+
+function srDraw() {
+  const lead = document.getElementById('srLead'), stamps = document.getElementById('srStamps');
+  const pc = srPressedCount(), ready = srReadyCount();
+  document.getElementById('srCnt').textContent = `押印 ${pc} / 26基`;
+  document.getElementById('srHint').textContent = ready > 0
+    ? `押せるスタンプが ${ready}つ あります。光る枠をタップして押そう`
+    : (pc === 26 ? '北海道灯台踏破！ 二十六のスタンプがそろいました' : (srPosition() < 0 ? 'まだ北海道に着いていません。着いたら、歩いて灯台をめざそう' : '次の灯台まで、歩いて進もう'));
+  let lh = '', sh = '';
+  SR_N.forEach(n => {
+    const d = SR_L[n.i], st = srState(n.i), id = srId(n.i);
+    const C = srCol(n.i), col = st === 'locked' ? '#8a6a3f' : C;
+    const dist = Math.hypot(n.x - n.tx, n.y - n.ty);
+    lh += `<circle cx="${n.tx}" cy="${n.ty}" r="2.6" fill="${st === 'done' ? C : (st === 'ready' ? '#fff' : '#8a6a3f')}" stroke="${col}" stroke-width="1.2"/>` + (dist > 14 ? `<line x1="${n.tx}" y1="${n.ty}" x2="${n.x}" y2="${n.y}" stroke="${col}" stroke-width="1" stroke-dasharray="3 2" opacity=".8"/>` : '');
+    let g = `<g class="sr-stamp" data-i="${n.i}" transform="translate(${n.x},${n.y})">`;
+    if (st === 'done') {
+      const pop = n.i === srLast ? ' sr-pop' : '';
+      g += `<g class="sr-ink${pop}" transform="rotate(${((n.i * 37) % 17) - 8})" opacity=".92"><circle r="19" fill="#fbf3dd" fill-opacity=".55" stroke="${C}" stroke-width="2.4"/><circle r="15.2" fill="none" stroke="${C}" stroke-width=".9"/>${srIcon(C)}<text y="17" text-anchor="middle" font-size="7.5" font-weight="700" fill="${C}">${srPad(n.i + 1)}</text></g>`;
+    } else if (st === 'ready') {
+      g += `<circle class="sr-pulse" r="21" fill="none" stroke="${C}" stroke-width="2"/><circle r="19" fill="#fffaf0" stroke="${C}" stroke-width="2.6"/><g opacity=".38" transform="translate(0,-3) scale(.8)">${srIcon(C)}</g><text y="14" text-anchor="middle" font-size="8" font-weight="700" fill="${C}">タップ</text>`;
+    } else {
+      g += `<circle r="19" fill="#f3e6c6" fill-opacity=".55" stroke="#9b7e4e" stroke-width="1.3" stroke-dasharray="3 3"/><text y="5" text-anchor="middle" font-size="13" fill="#9b7e4e">${srPad(n.i + 1)}</text>`;
+    }
+    g += `<text y="34" text-anchor="middle" font-size="11.5" font-weight="700" fill="${st === 'locked' ? '#a89268' : '#4a3320'}" stroke="#f6ebcf" stroke-width="3" paint-order="stroke">${d[0]}</text></g>`;
+    sh += g;
+  });
+  lead.innerHTML = lh; stamps.innerHTML = sh;
+  srLast = -1;
+  stamps.querySelectorAll('.sr-stamp').forEach(el => el.onclick = () => {
+    const i = +el.dataset.i, st = srState(i);
+    if (st === 'ready') {
+      const t = new Date();
+      srLoad().pressed[srId(i)] = `${t.getFullYear()}-${srPad(t.getMonth() + 1)}-${srPad(t.getDate())}`;
+      srSave(); srLast = i;
+      try { navigator.vibrate && navigator.vibrate(30); } catch (e) {}
+      srDraw(); srShow(i); srToastFor(i);
+    } else srShow(i);
+  });
+  srRenderCards();
+}
+function srShow(i) {
+  const d = SR_L[i], st = srState(i);
+  const head = `<b>No.${srPad(i + 1)} ${d[0]}灯台</b><span style="color:#7a6548">（${SR_R[i]}とうだい）</span><br>`;
+  document.getElementById('srInfo').innerHTML = st === 'locked'
+    ? head + 'まだ到達していません。歩いて辿り着くと、スタンプが押せるようになります。'
+    : (st === 'ready' ? head + '到達しました！ 枠をタップしてスタンプを押そう。'
+      : head + `所在地：${d[1]}　初点灯：${d[4]}<br>高さ：${d[5]}　灯質：${d[6]}<br>押印日：${srDateLabel(srLoad().pressed[srId(i)]) || '-'}${d[7] ? `<br><span style="color:#7a6548">${d[7]}</span>` : ''}`);
+}
+function srRenderCards() {
+  const pc = srPressedCount();
+  document.getElementById('srCn').textContent = pc;
+  document.getElementById('srCbar').style.width = (pc / 26 * 100) + '%';
+  document.getElementById('srCdone').classList.toggle('show', pc === 26);
+  const g = document.getElementById('srCgrid'); g.innerHTML = '';
+  SR_L.forEach((d, i) => {
+    const st = srState(i), el = document.createElement('div');
+    el.className = 'sr-ccell ' + (st === 'done' ? 'on' : st === 'ready' ? 'rdy' : 'off');
+    const nm = st === 'done' ? `${srPad(i + 1)}. ${d[0]}灯台` : `${srPad(i + 1)}.`;
+    const tag = st === 'done' ? '<span class="sr-tag ok"><svg viewBox="0 0 24 24" width="13" height="13"><path d="M5 12.5l4.2 4.2L19 7" fill="none" stroke="#2f7fc1" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span>'
+      : st === 'ready' ? '<span class="sr-tag rd">スタンプを押そう</span>'
+      : '<span class="sr-tag lk"><svg viewBox="0 0 24 24" width="13" height="13" fill="#fff"><path d="M6 10V8a6 6 0 1112 0v2h1v11H5V10h1zm2 0h8V8a4 4 0 10-8 0v2z"/></svg></span>';
+    el.innerHTML = `<p class="sr-nm">${nm}</p><div class="sr-pic">${srArt(i, st !== 'done', 'k' + i)}${tag}</div>`;
+    el.onclick = () => { if (st === 'done') srOpenCard(i); else if (st === 'ready') { srSetTab('B'); srShow(i); } };
+    g.appendChild(el);
+  });
+}
+function srOpenCard(i) {
+  const d = SR_L[i], cc = document.getElementById('srCcard'); cc.classList.remove('flip');
+  document.getElementById('srArt').innerHTML = srArt(i, false, 'm' + i);
+  document.getElementById('srNo').textContent = 'No.' + srPad(i + 1);
+  document.getElementById('srName').textContent = d[0] + '灯台';
+  document.getElementById('srLoc').textContent = d[1];
+  document.getElementById('srBName').textContent = 'No.' + srPad(i + 1) + ' ' + d[0] + '灯台';
+  document.getElementById('srBYomi').textContent = 'よみ：' + SR_R[i] + 'とうだい';
+  document.getElementById('srBDl').innerHTML = `<dt>所在地</dt><dd>${d[1]}</dd><dt>初点灯年</dt><dd>${d[4]}</dd><dt>高さ</dt><dd>${d[5]}</dd><dt>灯質</dt><dd>${d[6]}</dd><dt>伊能の測量</dt><dd style="color:${srCol(i)};font-weight:700">${SR_INO[i] ? '歩いた区間（1800年）' : '歩いていない区間'}</dd><dt>押印日</dt><dd>${srDateLabel(srLoad().pressed[srId(i)]) || '-'}</dd><dt>写真</dt><dd>${(SR_PH[i] && SR_PH[i].img) ? [SR_PH[i].src, SR_PH[i].who, SR_PH[i].lic].filter(Boolean).join('／') || '出典は未記入' : '仮のイラスト（実写真は確認中）'}</dd>`;
+  document.getElementById('srBAinu').innerHTML = SR_AINU[i] ? `<b>🌿 地名の意味（アイヌ語）</b>${SR_AINU[i].replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]))}<br><span style="font-size:10px;color:#5b7d6a">※解釈には諸説あります</span>` : '';
+  document.getElementById('srBMemo').textContent = d[7] || '解説は準備中です。';
+  document.getElementById('srCardOv').classList.add('show');
+}
+function srToastFor(i) {
+  srToastIdx = i;
+  document.getElementById('srToastTxt').textContent = `No.${srPad(i + 1)} ${SR_L[i][0]}灯台のカードを手に入れた！`;
+  const t = document.getElementById('srToast'); t.classList.add('show');
+  clearTimeout(srToastTimer); srToastTimer = setTimeout(() => t.classList.remove('show'), 4500);
+}
+
+// ---- スプレッドシート連携 ----
+// 公開したCSVのURLをここに入れる（空なら、アプリに埋め込んだデータだけで動く）
+const SR_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQhNwlFzhdHiiNDyZt2lnEEZCNjjEZhyKYAWzUcvGJ4uRYTvQUKTN3xhwS7n4IwbtD7IUjtstkscFSe/pub?gid=481636421&single=true&output=csv';
+const SR_MASTER_KEY = 'inowalk_stampRally_master'; // 最後に読めたシートの控え（オフライン用）
+const SR_INO = [1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]; // 1=伊能が実測した区間（赤） 0=歩いていない区間（青）。1800年の第1次測量は西別（別海町）まで
+function srCol(i){return SR_INO[i] ? '#c4302b' : '#2f6fb0';}
+const SR_PH = []; // 灯台ごとの写真情報 {img, src, who, lic}
+const SR_AINU = ["アイヌ語の「アッ・ウシ（at-us-i / オヒョウニレの木が多くある場所）」が語源とされている。 音の変化と漢字表記：もともとの「アトゥシ」が「カットシ（カトウシ）」と訛り、そこに日本語の漢字を当てて「葛登支（かっとし）」と表記するようになった。", "アイヌ語の「エ・サン・イ（e-san-i / 頭が・浜の方に出ている・所＝岬）」が語源とされている。 その他の説（火山説）：活火山である恵山の様子から「イェ・サン（ye-san / 溶岩・膿が流れる所）」や「エニシャヌプリ（噴火する山）」に由来するという説もある。「岬・岬」の重複地名：もともとの「エサン」自体に「岬」という意味が含まれていた。和人が「恵山」という漢字を当てたことで周辺の山（恵山）の名前としても定着しました。その結果、岬を指す際に「恵山岬（＝岬・岬）」と呼ぶようになったと伝えられている", "アイヌ語の「チケプ」（断崖）に由来。「ポロ・チケプ＝親である断崖」説もある。", "アイヌ語の「エンルム」（岬）に由来するとされる。「大きな岬（ポロ／オンネ・エンルム）」説や、ネズミ（エルム）説もある。", "アイヌ語の「トプッ」（湖の・口）、または「トウッ」（沼の脇）に由来するとされる。", "アイヌ語の「オク・チシ（ok-chishi / 人の首の付け根のくぼみ・うなじ・ぼんのくぼ）」、または「オㇰチン（山の尾根のくぼみ）」に由来するとされている", "アイヌ語の「ポロ・ノッ」（大きな・岬）を意訳して「鼻崎」と書き、「花咲」になったと推測されている。", "アイヌ語の「ノッ・サㇺ（not-sam / 岬の傍ら・際）」が語源とされている。また、「岬が顎のように突き出たところ」という意味の「ノッ・シャㇺ」に由来する説もある。もともとは集落の名前：元来は岬そのものではなく、岬のすぐそばにあったコタン（アイヌの集落）を指す地名だった。それが時代とともに岬自体の名前として定着し、日本語の当て字で「納沙布」と表記されるようになった。", "アイヌ語の「ノッ・カ・オマ・プ（not-ka-oma-p / 岬の・上に・ある・所）」が語源とされている。", "アイヌ語の「ノッ・ケウ」（あごの・骨）に由来。釣り針のように伸びた野付半島の形から。", "アイヌ語の「ラウシ」に由来し、「低いところ」とする説（永田方正）などがあり、諸説ある。", "アイヌ語の「ウトゥルチクシ」（その間を・われわれが・通るところ）に由来。岩と岩の間の細道から。", "アイヌ語の「ノッ・オロ」（岬の・ところ）に由来。", "アイヌ語の「モ・ペッ」（静かな・川）に由来。もとは元紋別地区を流れる藻鼈川の名。", "アイヌ語の「ソー・ヤ」（岩礁の・岸）に由来。宗谷岬の周りは、遠浅の岩礁が続いている。", "灯台のあるノシャップ（野寒布）岬は、アイヌ語の「ノッ・サム」（岬の・かたわら）と推測されている。「あごのように突き出たところ」説もある。", "アイヌ語の「クッ・カ・アン・ナイ」（崖の・上に・ある・川）、または「クッチ・カン・ナイ」（こくわの実を・採る・川）に由来するとされる。", "和人による命名（海の守り神）：明治40年（1907年）頃、現在の初山別村にあるこの浜に、香川県の金刀比羅宮（こんぴらさん）のお札が流れ着いた。地元の漁師がそれを拾って岩の上に祠（ほこら）を建てたところ、周囲での海難事故が減ったため、海の守り神にちなんで「金比羅岬」と呼ばれるようになった。和人が「金比羅岬」と呼ぶようになる前は、アイヌ語で「フレベツ崎（フウレ・ペッ＝赤い川）」「イナヲサキ（イナウ・サキ＝木幣を捧げる岬）」「風連岬」などと呼ばれていた。", "アイヌ語の「マシュケ」（カモメの多いところ）に由来するとされる。", "石狩川の名のアイヌ語「イシカラペッ」に由来。「美しく・作る・川」説、「曲がりくねって流れる川」説などがある。", "和名。：和人が「金比羅岬」と呼ぶようになる前は、アイヌ語で「フレベツ崎（フウレ・ペッ＝赤い川）」「イナヲサキ（イナウ・サキ＝木幣を捧げる岬）」「風連岬」などと呼ばれていた。", "アイヌ語の「カムイ」（神）に由来。この岬一帯が、神の宿る聖地とされていた。", "アイヌ語説（音のルーツ）：岬の先端が裂けたような地形を指すアイヌ語の「ペル・ケイ（per-key / 裂けたところ・破れたところ）」や、獣の背首の形を表す「ベニッケウ」が訛り、和人に聞き馴染みのある「ベンケイ」の音になったとされている。また、かつてアイヌの人々はこの岬を「ポロ・エド（大きな鼻の形の岬）」とも呼んでいた。義経・弁慶伝説（漢字の由来）：奥州から蝦夷地へ逃れた源義経と武蔵坊弁慶が滞在した際、弁慶が同志（常陸坊海尊）の援軍を待って毎日この岬の先端に立ち続けたという伝説が語り継がれてる。アイヌ語の音にこの伝説が重なり、「弁慶岬」という漢字が当てられた。北海道寿都（すっつ）町に位置しており、現在では海を見つめて立つ大きな弁慶の銅像と夕日の名所として知られている。", "アイヌ語説：江戸時代の古文書などには「モツタ崎」と記されており、アイヌ語の「モ・オタ（mo-ota / 小さな・砂浜）」が訛って「モッタ」になったという説が有力。地形とのつながり：茂津多岬そのものは高さ約280mの切り立った断崖絶壁。その崖続きの合間に点在する小さな砂浜を指していた言葉が、岬全体の地名として定着したと考えられている。", "アイヌが神様への捧げものとして木を削って作る祭具「イナウ（inaw / 木幣）」が語源とされている。かつてこの岬は航海の難所で、航海の安全を祈願するためにイナウを立てて祀ったことから「イナウ」と呼ばれ、後に音の似た日本語の「稲穂」という漢字が当てられた。", "上空から見た島の形が「カモメが羽を広げた姿」に似ていることや、かつてニシンの群れを追って多くのカモメがこの島に集まっていたことから、明治時代に「鴎島」と名付けられた。和人が定着する前は、アイヌ語で「カムイ・シリ（kamuy-sir / 神の島）」と呼ばれていた。"]; // アイヌ語地名の意味（じょさん調査・諸説あり。出典はマスターシートの「地名の意味の出典メモ」）
+function srApplyMaster(text) {
+  try {
+    const rows = parseCSV(text.replace(/^\uFEFF/, ''));
+    if (!rows.length) return false;
+    const h = rows[0].map(x => (x || '').trim()), col = n => h.indexOf(n);
+    if (['灯台名', '読み', '所在地', '緯度', '経度', 'ルート到達率'].some(n => col(n) < 0)) return false;
+    const g = (r, n) => (col(n) < 0 ? '' : (r[col(n)] || '').trim());
+    let items = rows.slice(1).filter(r => g(r, '灯台名')).map(r => ({
+      ord: parseFloat(g(r, '順路')), r
+    }));
+    if (items.length !== 26) return false;
+    if (items.every(x => !isNaN(x.ord))) items.sort((a, b) => a.ord - b.ord);
+    const L = [], R = [], F = [], PH = [], AI = [], IN = [];
+    for (const { r } of items) {
+      const lat = parseFloat(g(r, '緯度')), lon = parseFloat(g(r, '経度')), fr = parseFloat(g(r, 'ルート到達率'));
+      if (isNaN(lat) || isNaN(lon) || isNaN(fr) || fr < 0 || fr > 1) return false;
+      let ht = g(r, '灯台の高さ'); if (/^[\d.]+$/.test(ht)) ht += 'm';
+      L.push([g(r, '灯台名').replace(/灯台$/, ''), g(r, '所在地'), lon, lat, g(r, '初点灯年') || '不明', ht || '不明', g(r, '灯質') || '不明', g(r, '解説') || g(r, '備考')]);
+      R.push(g(r, '読み').replace(/とうだい$/, ''));
+      F.push(fr);
+      AI.push(g(r, 'アイヌ語地名の意味'));
+      { const v = g(r, 'イノ測量'); IN.push(/^(実測|赤|1|○|歩いた)/.test(v) ? 1 : (v ? 0 : null)); }
+      PH.push({ img: g(r, '画像URL'), src: g(r, '写真出典'), who: g(r, '撮影者'), lic: g(r, 'ライセンス') });
+    }
+    SR_L.length = 0; L.forEach(x => SR_L.push(x));
+    SR_R.length = 0; R.forEach(x => SR_R.push(x));
+    SR_FR.length = 0; F.forEach(x => SR_FR.push(x));
+    SR_PH.length = 0; PH.forEach(x => SR_PH.push(x));
+    SR_AINU.length = 0; AI.forEach(x => SR_AINU.push(x));
+    if (IN.every(x => x !== null)) { SR_INO.length = 0; IN.forEach(x => SR_INO.push(x)); }
+    srBuilt = false;
+    srRefresh();
+    if (document.getElementById('srScreen').classList.contains('show')) { srBuild(); srDraw(); }
+    return true;
+  } catch (e) { return false; }
+}
+async function srLoadMaster() {
+  try { const c = localStorage.getItem(SR_MASTER_KEY); if (c) srApplyMaster(c); } catch (e) {}
+  if (!SR_CSV_URL) return;
+  try {
+    const resp = await fetch(SR_CSV_URL);
+    if (!resp.ok) return;
+    const text = await resp.text();
+    if (srApplyMaster(text)) { try { localStorage.setItem(SR_MASTER_KEY, text); } catch (e) {} }
+  } catch (e) { /* オフライン等は、埋め込み／控えのデータで続行 */ }
+}
+function srArt(i, sil, id) {
+  const svg = srLh(SR_S[i], sil, id), p = SR_PH[i];
+  if (!p || !p.img || sil) return svg;
+  const u = p.img.replace(/"/g, '%22');
+  return `<div style="position:relative;width:100%;height:100%">${svg}<img src="${u}" alt="" referrerpolicy="no-referrer" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block" onerror="this.style.display='none'"></div>`;
+}
+document.addEventListener('DOMContentLoaded', () => { try { srRefresh(); } catch (e) {} srLoadMaster(); });
 
 captureAppVersion();
 </script>
