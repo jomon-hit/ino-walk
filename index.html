@@ -589,6 +589,9 @@ body {
 .sr-chead h2{margin:0 0 6px;font-size:20px;letter-spacing:.06em}
 .sr-cbar{height:14px;border-radius:8px;background:#fff8e6;border:1.5px solid #a88a58;overflow:hidden}
 .sr-cbar i{display:block;height:100%;background:linear-gradient(90deg,#d9604a,#c4302b);transition:width .3s}
+#srCardsView{background:#8d9a85 url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2720%27 height=%2720%27%3E%3Crect width=%2720%27 height=%2720%27 fill=%27%238d9a85%27/%3E%3Cpath d=%27M10 1.5L18.5 10L10 18.5L1.5 10Z%27 fill=%27none%27 stroke=%27%23aab6a2%27 stroke-width=%27.9%27/%3E%3Cpath d=%27M10 6L14 10L10 14L6 10Z%27 fill=%27none%27 stroke=%27%239aa793%27 stroke-width=%27.7%27/%3E%3Ccircle cx=%2710%27 cy=%2710%27 r=%271%27 fill=%27%23b9c4b1%27/%3E%3C/svg%3E");padding:13px;border-radius:3px;border:1px solid #6f7b69;box-shadow:0 6px 20px rgba(60,40,10,.3)}
+.sr-hero{aspect-ratio:600/250;margin:-14px -12px 2px;background:linear-gradient(to bottom,rgba(239,232,212,0) 62%,#efe8d4 100%),url("images/bg_wave.jpg") center 72%/100% auto no-repeat}
+.sr-scroll-in{background-color:#efe8d4;background-image:linear-gradient(rgba(239,232,212,.8),rgba(239,232,212,.8)),url("images/bg_wave.jpg");background-repeat:repeat-y;background-size:100% auto;background-position:center top;border:2px solid #c9ad63;outline:1px solid #8a6a3f;outline-offset:-5px;padding:14px 12px 16px}
 .sr-cgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
 .sr-ccell{background:#fffaf0;border:1.5px solid #c9b383;border-radius:10px;padding:5px 5px 6px}
 .sr-ccell.on{cursor:pointer}
@@ -614,6 +617,13 @@ body {
 .sr-front{background:linear-gradient(#cfe8f7,#eaf6fc)}
 .sr-art{position:absolute;inset:0}
 .sr-art svg{width:100%;height:100%;display:block}
+.sr-art .sr-ph{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.sr-pic .sr-ph{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.sr-pnav{position:absolute;top:50%;transform:translateY(-50%);width:30px;height:30px;border-radius:50%;border:0;background:rgba(0,0,0,.42);color:#fff;font-size:15px;line-height:30px;padding:0;cursor:pointer;z-index:3}
+.sr-pnav.l{left:6px}.sr-pnav.r{right:6px}
+.sr-pdots{position:absolute;left:0;right:0;bottom:70px;text-align:center;z-index:3;pointer-events:none}
+.sr-pdots i{display:inline-block;width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.55);margin:0 3px}
+.sr-pdots i.on{background:#fff}
 .sr-front .sr-top{position:absolute;left:0;right:0;top:0;padding:10px 12px;display:flex;justify-content:space-between;align-items:center;font-size:12px;color:#17406b;font-weight:700;background:linear-gradient(rgba(255,255,255,.85),rgba(255,255,255,0))}
 .sr-front .sr-bot{position:absolute;left:0;right:0;bottom:0;padding:26px 12px 12px;background:linear-gradient(rgba(23,64,107,0),rgba(23,64,107,.88) 55%);color:#fff;text-align:center}
 .sr-front .sr-bot b{font-size:21px;letter-spacing:.06em;display:block}
@@ -806,7 +816,7 @@ body {
         ※ 起点は青函トンネル北海道側の出口あたり（知内町）、反時計回りです。
       </div>
     </div>
-    <div id="srCardsView" style="display:none">
+    <div id="srCardsView" style="display:none"><div class="sr-scroll-in"><div class="sr-hero"></div>
       <div class="sr-chead"><h2>北海道灯台カード</h2>
         <div style="font-weight:700;margin-bottom:6px"><span id="srCn">0</span> / 26枚 獲得</div>
         <div class="sr-cbar"><i id="srCbar" style="width:0"></i></div></div>
@@ -814,14 +824,15 @@ body {
       <div class="sr-cgrid" id="srCgrid"></div>
       <div class="sr-note">
         ※ カードの絵は仮のイラストです（実際の写真は、ライセンス確認後に差し替え）。<br>
-        ※ 到達した灯台は、スタンプ台紙でスタンプを押すとカードが手に入ります。押すまでは、いつまでも未獲得のままです。
+        ※ 到達した灯台は、スタンプ台紙でスタンプを押すとカードが手に入ります。押すまでは、いつまでも未獲得のままです。<br>
+        ※ 背景の絵：Wave／葛飾北斎（Katsushika Hokusai）／江戸時代／The Metropolitan Museum of Art（Public Domain・Open Access）・縮小して使用
       </div>
-    </div>
+    </div></div>
   </div>
 </div>
 
 <div id="srCardOv"><div class="sr-card" id="srCcard"><div class="sr-inner">
-  <div class="sr-face sr-front"><div class="sr-art" id="srArt"></div>
+  <div class="sr-face sr-front"><div class="sr-art" id="srArt"></div><button class="sr-pnav l" id="srPPrev" style="display:none" aria-label="前の写真">‹</button><button class="sr-pnav r" id="srPNext" style="display:none" aria-label="次の写真">›</button><div class="sr-pdots" id="srPDots"></div>
     <div class="sr-top"><span id="srNo"></span><span>北海道灯台シリーズ</span></div>
     <div class="sr-bot"><b id="srName"></b><span id="srLoc"></span></div></div>
   <div class="sr-face sr-back2"><h3 id="srBName"></h3><div class="sr-yomi" id="srBYomi"></div><dl id="srBDl"></dl><div class="sr-ainu" id="srBAinu"></div><div class="sr-memo" id="srBMemo"></div></div>
@@ -3977,17 +3988,21 @@ function srRenderCards() {
     el.innerHTML = `<p class="sr-nm">${nm}</p><div class="sr-pic">${srArt(i, st !== 'done', 'k' + i)}${tag}</div>`;
     el.onclick = () => { if (st === 'done') srOpenCard(i); else if (st === 'ready') { srSetTab('B'); srShow(i); } };
     g.appendChild(el);
+    if (st === 'done') srPhotos(i).then(list => { if (!list.length) return; const pic = el.querySelector('.sr-pic'); if (pic && !pic.querySelector('.sr-ph')) { const im = document.createElement('img'); im.className = 'sr-ph'; im.alt = ''; im.src = list[0]; pic.insertBefore(im, pic.firstChild); } });
   });
 }
 function srOpenCard(i) {
   const d = SR_L[i], cc = document.getElementById('srCcard'); cc.classList.remove('flip');
   document.getElementById('srArt').innerHTML = srArt(i, false, 'm' + i);
+  srCardList = []; srCardK = 0; srCardI = i; const tok = ++srCardTok;
+  document.getElementById('srPPrev').style.display = 'none'; document.getElementById('srPNext').style.display = 'none'; document.getElementById('srPDots').innerHTML = '';
+  srPhotos(i).then(list => { if (tok !== srCardTok || !list.length) return; srCardList = list; const m = list.length > 1 ? 'block' : 'none'; document.getElementById('srPPrev').style.display = m; document.getElementById('srPNext').style.display = m; srShowPhoto(0); });
   document.getElementById('srNo').textContent = 'No.' + srPad(i + 1);
   document.getElementById('srName').textContent = d[0] + '灯台';
   document.getElementById('srLoc').textContent = d[1];
   document.getElementById('srBName').textContent = 'No.' + srPad(i + 1) + ' ' + d[0] + '灯台';
   document.getElementById('srBYomi').textContent = 'よみ：' + SR_R[i] + 'とうだい';
-  document.getElementById('srBDl').innerHTML = `<dt>所在地</dt><dd>${d[1]}</dd><dt>初点灯年</dt><dd>${d[4]}</dd><dt>高さ</dt><dd>${d[5]}</dd><dt>灯質</dt><dd>${d[6]}</dd><dt>伊能の測量</dt><dd style="color:${srCol(i)};font-weight:700">${SR_INO[i] ? '歩いた区間（1800年）' : '歩いていない区間'}</dd><dt>押印日</dt><dd>${srDateLabel(srLoad().pressed[srId(i)]) || '-'}</dd><dt>写真</dt><dd>${(SR_PH[i] && SR_PH[i].img) ? [SR_PH[i].src, SR_PH[i].who, SR_PH[i].lic].filter(Boolean).join('／') || '出典は未記入' : '仮のイラスト（実写真は確認中）'}</dd>`;
+  document.getElementById('srBDl').innerHTML = `<dt>所在地</dt><dd>${d[1]}</dd><dt>初点灯年</dt><dd>${d[4]}</dd><dt>高さ</dt><dd>${d[5]}</dd><dt>灯質</dt><dd>${d[6]}</dd><dt>伊能の測量</dt><dd style="color:${srCol(i)};font-weight:700">${SR_INO[i] ? '歩いた区間（1800年）' : '歩いていない区間'}</dd><dt>押印日</dt><dd>${srDateLabel(srLoad().pressed[srId(i)]) || '-'}</dd><dt>写真</dt><dd id="srBPhoto">${(SR_PH[i] && SR_PH[i].img) ? srEsc([SR_PH[i].src, SR_PH[i].who, SR_PH[i].lic].filter(Boolean).join('／') || '出典は未記入') : '仮のイラスト（実写真は確認中）'}</dd>`;
   document.getElementById('srBAinu').innerHTML = SR_AINU[i] ? `<b>🌿 地名の意味（アイヌ語）</b>${SR_AINU[i].replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]))}<br><span style="font-size:10px;color:#5b7d6a">※解釈には諸説あります</span>` : '';
   document.getElementById('srBMemo').textContent = d[7] || '解説は準備中です。';
   document.getElementById('srCardOv').classList.add('show');
@@ -4006,6 +4021,59 @@ const SR_MASTER_KEY = 'inowalk_stampRally_master'; // 最後に読めたシー�
 const SR_INO = [1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]; // 1=伊能が実測した区間（赤） 0=歩いていない区間（青）。1800年の第1次測量は西別（別海町）まで
 function srCol(i){return SR_INO[i] ? '#c4302b' : '#2f6fb0';}
 const SR_PH = []; // 灯台ごとの写真情報 {img, src, who, lic}
+// 写真は images/lighthouse/HK01.jpg, HK01-2.jpg ... の名前で置くと自動で見つかる（拡張子は jpg/jpeg/png/webp）
+// 写真のクレジットはシートの「写真クレジット」列に、1枚1行（セル内改行）で書く
+const SR_CRED = ['Ozizo／May 4, 2010／Public Domain（Wikimedia Commons）']; // 予備（シートが読めない時用）
+const SR_PH_EXT = ['jpg', 'jpeg', 'png', 'webp'];
+const SR_PH_MAX = 8;
+const srPhCache = {};
+function srProbe(u) { return new Promise(res => { const im = new Image(); im.onload = () => res(true); im.onerror = () => res(false); im.src = u; }); }
+async function srFindPhoto(id, n) {
+  for (const e of SR_PH_EXT) {
+    const u = `images/lighthouse/${id}${n > 1 ? '-' + n : ''}.${e}`;
+    if (await srProbe(u)) return u;
+  }
+  return null;
+}
+function srPhotos(i) {
+  const id = srId(i);
+  if (!srPhCache[id]) srPhCache[id] = (async () => {
+    const list = [];
+    for (let n = 1; n <= SR_PH_MAX; n++) { const u = await srFindPhoto(id, n); if (!u) break; list.push(u); }
+    return list;
+  })();
+  return srPhCache[id];
+}
+function srCredLines(i) { return (SR_CRED[i] || '').split(/\r?\n/).map(x => x.trim()).filter(Boolean); }
+// クレジット文の中の「CC BY-SA 4.0」などを、ライセンス説明ページへのリンクにする
+function srCredHtml(t) {
+  let h = srEsc(t);
+  h = h.replace(/CC BY(-SA)?[ -]?(\d\.\d)/g, (m, sa, v) => `<a href="https://creativecommons.org/licenses/by${sa ? '-sa' : ''}/${v}/" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="color:#2f6fb0">${m}</a>`);
+  h = h.replace(/CC0( 1\.0)?/g, m => `<a href="https://creativecommons.org/publicdomain/zero/1.0/" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="color:#2f6fb0">${m}</a>`);
+  return h;
+}
+function srEsc(t) { return String(t).replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c])); }
+let srCardTok = 0, srCardList = [], srCardK = 0, srCardI = 0;
+function srShowPhoto(k) {
+  const n = srCardList.length; if (!n) return;
+  srCardK = (k + n) % n;
+  const art = document.getElementById('srArt'); let im = art.querySelector('.sr-ph');
+  if (!im) { im = document.createElement('img'); im.className = 'sr-ph'; im.alt = ''; art.appendChild(im); }
+  im.src = srCardList[srCardK];
+  document.getElementById('srPDots').innerHTML = n > 1 ? srCardList.map((_, j) => `<i class="${j === srCardK ? 'on' : ''}"></i>`).join('') : '';
+  const lines = srCredLines(srCardI);
+  const t = lines.length ? (lines[srCardK] || lines[lines.length - 1]) : '出典は未記入';
+  const dd = document.getElementById('srBPhoto'); if (dd) dd.innerHTML = (n > 1 ? `(${srCardK + 1}/${n}) ` : '') + srCredHtml(t);
+}
+function srPhotoSetup() {
+  const pv = document.getElementById('srPPrev'), nx = document.getElementById('srPNext');
+  pv.onclick = e => { e.stopPropagation(); srShowPhoto(srCardK - 1); };
+  nx.onclick = e => { e.stopPropagation(); srShowPhoto(srCardK + 1); };
+  const art = document.getElementById('srArt'); let x0 = null;
+  art.addEventListener('touchstart', e => { x0 = e.touches[0].clientX; }, { passive: true });
+  art.addEventListener('touchend', e => { if (x0 === null || srCardList.length < 2) return; const dx = e.changedTouches[0].clientX - x0; x0 = null; if (Math.abs(dx) > 40) srShowPhoto(srCardK + (dx < 0 ? 1 : -1)); }, { passive: true });
+}
+document.addEventListener('DOMContentLoaded', srPhotoSetup);
 const SR_AINU = ["アイヌ語の「アッ・ウシ（at-us-i / オヒョウニレの木が多くある場所）」が語源とされている。 音の変化と漢字表記：もともとの「アトゥシ」が「カットシ（カトウシ）」と訛り、そこに日本語の漢字を当てて「葛登支（かっとし）」と表記するようになった。", "アイヌ語の「エ・サン・イ（e-san-i / 頭が・浜の方に出ている・所＝岬）」が語源とされている。 その他の説（火山説）：活火山である恵山の様子から「イェ・サン（ye-san / 溶岩・膿が流れる所）」や「エニシャヌプリ（噴火する山）」に由来するという説もある。「岬・岬」の重複地名：もともとの「エサン」自体に「岬」という意味が含まれていた。和人が「恵山」という漢字を当てたことで周辺の山（恵山）の名前としても定着しました。その結果、岬を指す際に「恵山岬（＝岬・岬）」と呼ぶようになったと伝えられている", "アイヌ語の「チケプ」（断崖）に由来。「ポロ・チケプ＝親である断崖」説もある。", "アイヌ語の「エンルム」（岬）に由来するとされる。「大きな岬（ポロ／オンネ・エンルム）」説や、ネズミ（エルム）説もある。", "アイヌ語の「トプッ」（湖の・口）、または「トウッ」（沼の脇）に由来するとされる。", "アイヌ語の「オク・チシ（ok-chishi / 人の首の付け根のくぼみ・うなじ・ぼんのくぼ）」、または「オㇰチン（山の尾根のくぼみ）」に由来するとされている", "アイヌ語の「ポロ・ノッ」（大きな・岬）を意訳して「鼻崎」と書き、「花咲」になったと推測されている。", "アイヌ語の「ノッ・サㇺ（not-sam / 岬の傍ら・際）」が語源とされている。また、「岬が顎のように突き出たところ」という意味の「ノッ・シャㇺ」に由来する説もある。もともとは集落の名前：元来は岬そのものではなく、岬のすぐそばにあったコタン（アイヌの集落）を指す地名だった。それが時代とともに岬自体の名前として定着し、日本語の当て字で「納沙布」と表記されるようになった。", "アイヌ語の「ノッ・カ・オマ・プ（not-ka-oma-p / 岬の・上に・ある・所）」が語源とされている。", "アイヌ語の「ノッ・ケウ」（あごの・骨）に由来。釣り針のように伸びた野付半島の形から。", "アイヌ語の「ラウシ」に由来し、「低いところ」とする説（永田方正）などがあり、諸説ある。", "アイヌ語の「ウトゥルチクシ」（その間を・われわれが・通るところ）に由来。岩と岩の間の細道から。", "アイヌ語の「ノッ・オロ」（岬の・ところ）に由来。", "アイヌ語の「モ・ペッ」（静かな・川）に由来。もとは元紋別地区を流れる藻鼈川の名。", "アイヌ語の「ソー・ヤ」（岩礁の・岸）に由来。宗谷岬の周りは、遠浅の岩礁が続いている。", "灯台のあるノシャップ（野寒布）岬は、アイヌ語の「ノッ・サム」（岬の・かたわら）と推測されている。「あごのように突き出たところ」説もある。", "アイヌ語の「クッ・カ・アン・ナイ」（崖の・上に・ある・川）、または「クッチ・カン・ナイ」（こくわの実を・採る・川）に由来するとされる。", "和人による命名（海の守り神）：明治40年（1907年）頃、現在の初山別村にあるこの浜に、香川県の金刀比羅宮（こんぴらさん）のお札が流れ着いた。地元の漁師がそれを拾って岩の上に祠（ほこら）を建てたところ、周囲での海難事故が減ったため、海の守り神にちなんで「金比羅岬」と呼ばれるようになった。和人が「金比羅岬」と呼ぶようになる前は、アイヌ語で「フレベツ崎（フウレ・ペッ＝赤い川）」「イナヲサキ（イナウ・サキ＝木幣を捧げる岬）」「風連岬」などと呼ばれていた。", "アイヌ語の「マシュケ」（カモメの多いところ）に由来するとされる。", "石狩川の名のアイヌ語「イシカラペッ」に由来。「美しく・作る・川」説、「曲がりくねって流れる川」説などがある。", "和名。：和人が「金比羅岬」と呼ぶようになる前は、アイヌ語で「フレベツ崎（フウレ・ペッ＝赤い川）」「イナヲサキ（イナウ・サキ＝木幣を捧げる岬）」「風連岬」などと呼ばれていた。", "アイヌ語の「カムイ」（神）に由来。この岬一帯が、神の宿る聖地とされていた。", "アイヌ語説（音のルーツ）：岬の先端が裂けたような地形を指すアイヌ語の「ペル・ケイ（per-key / 裂けたところ・破れたところ）」や、獣の背首の形を表す「ベニッケウ」が訛り、和人に聞き馴染みのある「ベンケイ」の音になったとされている。また、かつてアイヌの人々はこの岬を「ポロ・エド（大きな鼻の形の岬）」とも呼んでいた。義経・弁慶伝説（漢字の由来）：奥州から蝦夷地へ逃れた源義経と武蔵坊弁慶が滞在した際、弁慶が同志（常陸坊海尊）の援軍を待って毎日この岬の先端に立ち続けたという伝説が語り継がれてる。アイヌ語の音にこの伝説が重なり、「弁慶岬」という漢字が当てられた。北海道寿都（すっつ）町に位置しており、現在では海を見つめて立つ大きな弁慶の銅像と夕日の名所として知られている。", "アイヌ語説：江戸時代の古文書などには「モツタ崎」と記されており、アイヌ語の「モ・オタ（mo-ota / 小さな・砂浜）」が訛って「モッタ」になったという説が有力。地形とのつながり：茂津多岬そのものは高さ約280mの切り立った断崖絶壁。その崖続きの合間に点在する小さな砂浜を指していた言葉が、岬全体の地名として定着したと考えられている。", "アイヌが神様への捧げものとして木を削って作る祭具「イナウ（inaw / 木幣）」が語源とされている。かつてこの岬は航海の難所で、航海の安全を祈願するためにイナウを立てて祀ったことから「イナウ」と呼ばれ、後に音の似た日本語の「稲穂」という漢字が当てられた。", "上空から見た島の形が「カモメが羽を広げた姿」に似ていることや、かつてニシンの群れを追って多くのカモメがこの島に集まっていたことから、明治時代に「鴎島」と名付けられた。和人が定着する前は、アイヌ語で「カムイ・シリ（kamuy-sir / 神の島）」と呼ばれていた。"]; // アイヌ語地名の意味（じょさん調査・諸説あり。出典はマスターシートの「地名の意味の出典メモ」）
 function srApplyMaster(text) {
   try {
@@ -4019,7 +4087,7 @@ function srApplyMaster(text) {
     }));
     if (items.length !== 26) return false;
     if (items.every(x => !isNaN(x.ord))) items.sort((a, b) => a.ord - b.ord);
-    const L = [], R = [], F = [], PH = [], AI = [], IN = [];
+    const L = [], R = [], F = [], PH = [], AI = [], IN = [], CR = [];
     for (const { r } of items) {
       const lat = parseFloat(g(r, '緯度')), lon = parseFloat(g(r, '経度')), fr = parseFloat(g(r, 'ルート到達率'));
       if (isNaN(lat) || isNaN(lon) || isNaN(fr) || fr < 0 || fr > 1) return false;
@@ -4029,6 +4097,7 @@ function srApplyMaster(text) {
       F.push(fr);
       AI.push(g(r, 'アイヌ語地名の意味'));
       { const v = g(r, 'イノ測量'); IN.push(/^(実測|赤|1|○|歩いた)/.test(v) ? 1 : (v ? 0 : null)); }
+      CR.push(g(r, '写真クレジット'));
       PH.push({ img: g(r, '画像URL'), src: g(r, '写真出典'), who: g(r, '撮影者'), lic: g(r, 'ライセンス') });
     }
     SR_L.length = 0; L.forEach(x => SR_L.push(x));
@@ -4036,6 +4105,7 @@ function srApplyMaster(text) {
     SR_FR.length = 0; F.forEach(x => SR_FR.push(x));
     SR_PH.length = 0; PH.forEach(x => SR_PH.push(x));
     SR_AINU.length = 0; AI.forEach(x => SR_AINU.push(x));
+    SR_CRED.length = 0; CR.forEach(x => SR_CRED.push(x));
     if (IN.every(x => x !== null)) { SR_INO.length = 0; IN.forEach(x => SR_INO.push(x)); }
     srBuilt = false;
     srRefresh();
